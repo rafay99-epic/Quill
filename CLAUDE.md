@@ -9,13 +9,13 @@ Quill** with its own name, bundle id, and icon so it has a distinct identity rat
 than impersonating the upstream paid app. The single reason this fork exists is
 documented below — read it before touching licensing.
 
-**Naming note (important):** the product is **Quill**, but the Xcode *target/scheme*
-and the source folder are still named **`VoiceInk`** (`VoiceInk.xcodeproj`, scheme
-`VoiceInk`, `VoiceInk/` sources, GitHub repo `rafay99-epic/VoiceInk`). Renaming those
-is deep, breakage-prone surgery for no benefit — **leave them**. `build.sh` builds the
-`VoiceInk` target and renames/re-stamps the product to `Quill.app`, exactly how Crisp
-builds `Crisp.app` from its target. So "VoiceInk" in a path/target = correct;
-"VoiceInk" as the user-facing app name = should be "Quill".
+**Naming note (important):** the product **and the GitHub repo** are **Quill**
+(`rafay99-epic/Quill`), but the Xcode *target/scheme* and the source folder are still
+named **`VoiceInk`** (`VoiceInk.xcodeproj`, scheme `VoiceInk`, `VoiceInk/` sources).
+Renaming those is deep, breakage-prone surgery for no benefit — **leave them**.
+`build.sh` builds the `VoiceInk` target and renames/re-stamps the product to
+`Quill.app`, exactly how Crisp builds `Crisp.app` from its target. So "VoiceInk" in a
+path/target/scheme = correct; "VoiceInk" as the app name or repo = should be "Quill".
 
 ## Why this fork exists (the load-bearing context)
 
@@ -72,7 +72,7 @@ about.
 - **No Claude / AI attribution anywhere**: no `Co-Authored-By`, no "Generated with
   Claude" in commits, PR titles/bodies, or changelogs. Credited to
   **Abdul Rafay (rafay99.com)**.
-- **`origin` is this fork (`rafay99-epic/VoiceInk`); `upstream` is `Beingpax`.**
+- **`origin` is this fork (`rafay99-epic/Quill`); `upstream` is `Beingpax`.**
   Push only to `origin`. **Never** open a PR or push to `upstream` — the license
   patch must not leak back into the owner's repo.
 - **Keep the license patch surgical.** When you sync upstream
@@ -108,7 +108,14 @@ in the View layer.
 
 ## Build & run
 
-Local, unsigned build — no Apple Developer account needed (uses ad-hoc signing via
+**Code signing:** ad-hoc only (`codesign --sign -`) — no certificate, no Apple
+account, no team. The project's `CODE_SIGN_IDENTITY`/`STYLE` are set to `-`/`Manual`
+and `DEVELOPMENT_TEAM` is empty (the upstream dev's team id `V6J6A3VWY2` and the
+`Apple Development` identity were removed). Ad-hoc signing **cannot** be dropped
+entirely — Apple Silicon refuses to launch an unsigned binary — but it requires
+nothing from the developer. Don't re-introduce a real identity/team.
+
+Local build — no Apple Developer account needed (ad-hoc signing via
 `LocalBuild.xcconfig`, which also sets the `LOCAL_BUILD` flag, though the license
 patch no longer depends on it):
 
@@ -153,7 +160,7 @@ pull the upstream developer's signed builds (which would clobber the patch).
   nightly / dev map to display name (`Quill` / `Quill Nightly` / `Quill Dev`), bundle
   suffix (`com.syntaxlabtechnology.quill` [+`.nightly`/`.dev`]), DMG asset name, and
   whether updates run.
-- `VoiceInk/Services/Updater.swift` — polls `rafay99-epic/VoiceInk` Releases (public,
+- `VoiceInk/Services/Updater.swift` — polls `rafay99-epic/Quill` Releases (public,
   no auth; the **repo** keeps the VoiceInk name even though the app is Quill). Stable →
   latest full release (`v0.<n>`, numeric compare); Nightly → newest pre-release
   (ordered by the `build <n>` parsed from the title, since the `nightly` tag is

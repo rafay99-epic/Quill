@@ -19,7 +19,7 @@ import os
 @MainActor
 final class Updater {
     /// `owner/repo` the releases are published to. Must match the GitHub repo.
-    static let repoSlug = "rafay99-epic/VoiceInk"
+    static let repoSlug = "rafay99-epic/Quill"
 
     /// Persisted "check automatically on launch" preference. Off by default — this
     /// fork is deliberately conservative about replacing the patched build.
