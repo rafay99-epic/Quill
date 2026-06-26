@@ -415,6 +415,9 @@ class UpdaterViewModel: ObservableObject {
         UserDefaults.standard.bool(forKey: Updater.autoCheckDefaultsKey)
 
     init() {
+        // Register the update-notification delegate now (at launch) so tapping a
+        // notification delivered in a previous session is still handled.
+        UpdateNotifier.shared.activate()
         // Check once on launch, then keep a recurring timer running while enabled.
         Task { @MainActor in await autoCheck() }
         startOrStopTimer()

@@ -17,6 +17,14 @@ final class UpdateNotifier: NSObject, UNUserNotificationCenterDelegate {
 
     private override init() { super.init() }
 
+    /// Register the delegate + Install-action category at app launch, so a
+    /// notification delivered in a *previous* session can still be handled when
+    /// tapped now (otherwise the delegate is set only after a notification is posted
+    /// this session, and tapping a persisted one would be a no-op). Call once on launch.
+    func activate() {
+        registerCategoryIfNeeded(UNUserNotificationCenter.current())
+    }
+
     /// Request permission (once) and post the update notification.
     func notifyUpdateAvailable(version: String) {
         let center = UNUserNotificationCenter.current()
