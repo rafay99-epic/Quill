@@ -418,6 +418,14 @@ class UpdaterViewModel: ObservableObject {
         // Check once on launch, then keep a recurring timer running while enabled.
         Task { @MainActor in await autoCheck() }
         startOrStopTimer()
+        // The system update notification's Install action (and tap) posts this —
+        // re-check the feed and install. Routed through NotificationCenter so it
+        // works even after a restart (no captured in-memory handler).
+        NotificationCenter.default.addObserver(
+            forName: .updateInstallRequested, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.installLatestIfAvailable() }
+        }
     }
 
     func setAutomaticallyChecksForUpdates(_ value: Bool) {
@@ -431,12 +439,15 @@ class UpdaterViewModel: ObservableObject {
         canCheckForUpdates = false
         Task { @MainActor in
             defer { canCheckForUpdates = Channel.current.updatesEnabled }
-            if let available = await updater.check() {
+            switch await updater.check() {
+            case .update(let available):
                 lastPromptedVersion = available.version
                 presentUpdatePrompt(available)
-            } else {
+            case .upToDate:
                 presentInfo(title: String(localized: "You're up to date"),
                             message: String(format: String(localized: "Quill %@ is the latest version."), Updater.currentVersion))
+            case .unavailable:
+                break // busy / channel disabled / network error — don't claim "up to date"
             }
         }
     }
@@ -460,10 +471,21 @@ class UpdaterViewModel: ObservableObject {
     /// appears, and never twice for the same version in one run.
     private func autoCheck() async {
         guard automaticallyChecksForUpdates, Channel.current.updatesEnabled else { return }
-        guard let available = await updater.check(),
+        guard case .update(let available) = await updater.check(),
               available.version != lastPromptedVersion else { return }
         lastPromptedVersion = available.version
         surfaceUpdate(available)
+    }
+
+    /// Triggered by the system update notification's Install action. Re-checks the
+    /// feed and installs if an update is still available — relies on no in-memory
+    /// state, so it works even if the app was restarted since the notification.
+    func installLatestIfAvailable() {
+        Task { @MainActor in
+            if case .update(let available) = await updater.check() {
+                startInstall(available)
+            }
+        }
     }
 
     /// Background update found → surface it without interrupting: a small in-app
@@ -477,9 +499,7 @@ class UpdaterViewModel: ObservableObject {
             onTap: { [weak self] in self?.startInstall(available) },
             actionButton: (label: String(localized: "Update"), action: { [weak self] in self?.startInstall(available) })
         )
-        UpdateNotifier.shared.notifyUpdateAvailable(version: available.version) { [weak self] in
-            Task { @MainActor in self?.startInstall(available) }
-        }
+        UpdateNotifier.shared.notifyUpdateAvailable(version: available.version)
     }
 
     private func presentUpdatePrompt(_ available: Updater.Available) {

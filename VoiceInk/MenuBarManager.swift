@@ -6,6 +6,16 @@ class MenuBarManager: ObservableObject {
     @Published var isMenuBarOnly: Bool {
         didSet {
             UserDefaults.standard.set(isMenuBarOnly, forKey: "IsMenuBarOnly")
+            // Invariant (enforced here, the single chokepoint for every write path):
+            // never strand the app with no UI. Hiding the dock icon while the menu
+            // bar icon is also hidden would leave no way to reopen the app, so if
+            // that combination is reached, force the menu bar icon back on.
+            if isMenuBarOnly {
+                let menuBarShown = UserDefaults.standard.object(forKey: "ShowMenuBarIcon") as? Bool ?? true
+                if !menuBarShown {
+                    UserDefaults.standard.set(true, forKey: "ShowMenuBarIcon")
+                }
+            }
             updateAppActivationPolicy()
         }
     }

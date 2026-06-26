@@ -2,26 +2,23 @@ import Foundation
 import UserNotifications
 
 /// Posts a macOS **system notification** (Notification Center) when a Quill update
-/// is available, with an "Install" action button. Tapping the notification — or its
-/// Install action — runs the stored install handler. This is separate from the
-/// app's in-app banner (`NotificationManager`); the updater fires both.
+/// is available, with an "Install" action. Tapping the notification — or its
+/// Install action — posts `.updateInstallRequested`, which `UpdaterViewModel`
+/// observes to re-check and install. Routing through a NotificationCenter post
+/// (rather than a captured closure) means the action still works after an app
+/// restart: there's no in-memory handler to go stale, and nothing is retained.
 final class UpdateNotifier: NSObject, UNUserNotificationCenterDelegate {
     static let shared = UpdateNotifier()
 
     private let categoryID = "QUILL_UPDATE"
     private let installActionID = "QUILL_UPDATE_INSTALL"
     private let requestID = "quill-update-available"
-
-    /// Hops to the main actor internally — safe to call from the notification
-    /// delegate (which the system invokes off the main thread).
-    private var installHandler: (() -> Void)?
     private var didRegisterCategory = false
 
     private override init() { super.init() }
 
     /// Request permission (once) and post the update notification.
-    func notifyUpdateAvailable(version: String, onInstall: @escaping () -> Void) {
-        installHandler = onInstall
+    func notifyUpdateAvailable(version: String) {
         let center = UNUserNotificationCenter.current()
         registerCategoryIfNeeded(center)
 
@@ -65,14 +62,15 @@ final class UpdateNotifier: NSObject, UNUserNotificationCenterDelegate {
         completionHandler([.banner, .sound])
     }
 
-    // Tapping the notification (default action) or its "Install" action installs.
+    // Tapping the notification (default action) or its "Install" action asks the
+    // updater to install — via a NotificationCenter post, so it survives a restart.
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         if response.actionIdentifier == installActionID || response.actionIdentifier == UNNotificationDefaultActionIdentifier {
-            installHandler?()
+            NotificationCenter.default.post(name: .updateInstallRequested, object: nil)
         }
         completionHandler()
     }
