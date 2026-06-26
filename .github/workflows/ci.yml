@@ -111,3 +111,18 @@ jobs:
         run: |
           gh release create "v$VERSION" build/Quill.dmg \
             --title "Quill $VERSION" --generate-notes
+
+      # Keep the Homebrew cask in sync automatically — the stable `quill` cask is
+      # version-pinned, so this pushes the new version + DMG sha256 to the tap.
+      # Needs a TAP_TOKEN secret (fine-grained PAT with Contents: Read & Write on
+      # rafay99-epic/homebrew-apps); skips with a warning if it's absent so a
+      # missing secret never fails the release.
+      - name: Bump Homebrew cask
+        env:
+          TAP_TOKEN: ${{ secrets.TAP_TOKEN }}
+        run: |
+          if [ -z "${TAP_TOKEN:-}" ]; then
+            echo "::warning::TAP_TOKEN not set — skipping cask bump. Add a fine-grained PAT with Contents: Read & Write on rafay99-epic/homebrew-apps as the TAP_TOKEN secret to automate it."
+            exit 0
+          fi
+          VERSION="$VERSION" CASK=quill bash .github/scripts/bump-cask.sh "$PWD/build/Quill.dmg"

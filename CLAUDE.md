@@ -181,6 +181,17 @@ pull the upstream developer's signed builds (which would clobber the patch).
 - `nightly.yml` — push to `nightly` builds the Nightly channel and refreshes the
   single rolling `nightly` pre-release (title carries `build <run_number>`).
 - whisper.xcframework is cached (`~/VoiceInk-Dependencies`, key `whisper-xcframework-v1`).
+- `promotion.yml` — weekly (Thu 09:00 UTC) + on-demand. Diffs `main` vs `nightly`;
+  if different, verifies nightly (lint + build) and runs `.github/scripts/promote.sh`,
+  which sets `main`'s tree to `nightly` and pushes → triggers the Stable release. No
+  manual step. **Needs the `PROMOTION_TOKEN` secret** (a PAT, *not* GITHUB_TOKEN —
+  a GITHUB_TOKEN push to main won't trigger ci.yml; scopes: Contents R/W, PRs R/W,
+  Workflows R/W).
+- **Homebrew casks** live in the `rafay99-epic/homebrew-apps` tap (`quill` +
+  `quill-nightly`). The release jobs auto-bump them via `.github/scripts/bump-cask.sh`
+  — **needs the `TAP_TOKEN` secret** (fine-grained PAT, Contents R/W on
+  `homebrew-apps`). Both cask-bump steps skip with a `::warning::` if the secret is
+  absent, so a missing token never fails a release.
 - **Branch model (house rule):** feature → `nightly` → PR; `main` is protected Stable.
   `.swiftlint.yml` is the permissive house config — if CI lint trips on inherited
   upstream code, add the rule to `disabled_rules` rather than churning files.
