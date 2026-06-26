@@ -105,6 +105,12 @@ final class ShortcutMonitor {
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {
             logger.error("Failed to install global shortcut event tap")
+            // The session event tap only returns nil when the process lacks
+            // Accessibility permission. Ad-hoc signed builds get a fresh code
+            // signature on every update, which silently invalidates the prior
+            // TCC grant (the toggle can still read as ON). Surface it instead of
+            // letting the hotkey die quietly.
+            notifyAccessibilityMissingIfNeeded()
             return false
         }
 
@@ -119,6 +125,25 @@ final class ShortcutMonitor {
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: eventTap, enable: true)
         return true
+    }
+
+    /// Posts a one-shot "grant Accessibility" prompt when the event tap fails to
+    /// install because the process isn't trusted. Without this the hotkey just
+    /// stops working with no feedback (see `installEventTap`).
+    private func notifyAccessibilityMissingIfNeeded() {
+        guard !AXIsProcessTrusted() else { return }
+        DispatchQueue.main.async {
+            NotificationManager.shared.showNotification(
+                title: String(localized: "Quill needs Accessibility permission to use the dictation hotkey"),
+                type: .warning,
+                duration: 8.0,
+                actionButton: (String(localized: "Open Settings"), {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                        NSWorkspace.shared.open(url)
+                    }
+                })
+            )
+        }
     }
 
     private func handleCGEvent(type: CGEventType, event: CGEvent) -> Bool {
