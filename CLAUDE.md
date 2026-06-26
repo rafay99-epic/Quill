@@ -210,8 +210,10 @@ pull the upstream developer's signed builds (which would clobber the patch).
 ### CI / release cycle (`.github/workflows/`)
 
 Only **`ci.yml`** remains — the old `nightly.yml` and `promotion.yml` (the Nightly
-channel + weekly auto-promotion) were **removed**; the model is now just **dev →
-stable** (see Branch model below).
+channel + the weekly auto-promotion cron) were **removed** so they stop consuming
+Actions minutes. This is a **personal, single-maintainer** repo (see the README
+disclaimer + upstream credit); the flow is just **feature branch → `main`** (see
+Branch model below).
 
 - `ci.yml` — `lint` (SwiftLint) gates. On a **PR**, `package` builds the DMG as an
   artifact (**ad-hoc** signed — deliberately no signing step there, so a PR branch
@@ -227,12 +229,15 @@ stable** (see Branch model below).
   `quill-nightly` cask is now orphaned — clean it from the tap when convenient.
 - The `PROMOTION_TOKEN` secret is no longer used (promotion.yml is gone); leave or
   delete it.
-- **Branch model (house rule):** work on **`dev`** → test locally with `./dev.sh`
-  (installs `/Applications/Quill Dev.app`; the Dev channel is local-only —
-  `make-dmg.sh` refuses it) → open a PR **`dev` → `main`** (CI builds a test DMG
-  artifact) → merge to `main` to cut the Stable release. `main` is protected Stable.
-  `.swiftlint.yml` is the permissive house config — if CI lint trips on inherited
-  upstream code, add the rule to `disabled_rules` rather than churning files.
+- **Branch model (house rule):** branch off **`main`** → test **locally** (`./dev.sh`
+  builds + installs the local-only Dev channel `/Applications/Quill Dev.app`;
+  `make-dmg.sh` refuses the Dev channel by design) → open a PR back to **`main`** (CI
+  builds a test DMG artifact) → merge to cut the Stable release. There is **no `dev`
+  branch** (Dev is a local build channel, not a branch). The old **`nightly` branch is
+  kept but inert** — no workflow runs on it; don't build on it. `main` is the only
+  branch CI releases from. `.swiftlint.yml` is the permissive house config — if CI
+  lint trips on inherited upstream code, add the rule to `disabled_rules` rather than
+  churning files.
 
 ## Unlocked feature gates (beyond the license)
 
