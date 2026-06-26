@@ -1,9 +1,11 @@
-# Permissive SwiftLint config matching the house style (Crisp/Porter/Vitals share
-# this exact disabled set). Rules that fire on size/length/naming are off — they're
-# noise on a large app. NOTE: this is a fork of a big upstream codebase; if CI lint
-# surfaces violations in inherited upstream code, add the offending rule here rather
-# than churning unrelated files.
+# SwiftLint config for the Quill fork. The house base (Crisp/Porter) disables the
+# size/length/naming rules as noise. On top of that, this is a fork of a large
+# upstream codebase that predates this lint setup, so every rule the *inherited*
+# code violates is also disabled here — the house rule is "add the rule rather than
+# churn unrelated upstream files." If you add NEW code, keep it clean; re-enable a
+# rule once the upstream code that trips it has been cleaned or removed.
 disabled_rules:
+  # house base
   - line_length
   - identifier_name
   - file_length
@@ -11,6 +13,34 @@ disabled_rules:
   - function_body_length
   - cyclomatic_complexity
   - todo
+  # tripped by inherited upstream code (June 2026 baseline)
+  - trailing_whitespace
+  - multiple_closures_with_trailing_closure
+  - function_parameter_count
+  - large_tuple
+  - redundant_string_enum_value
+  - vertical_whitespace
+  - implicit_optional_initialization
+  - trailing_newline
+  - trailing_comma
+  - for_where
+  - unused_closure_parameter
+  - closure_parameter_position
+  - statement_position
+  - force_cast
+  - vertical_parameter_alignment
+  - redundant_discardable_let
+  - control_statement
+  - private_over_fileprivate
+  - non_optional_string_data_conversion
+  - empty_enum_arguments
+  - void_function_in_ternary
+  - unneeded_synthesized_initializer
+  - trailing_semicolon
+  - static_over_final_class
+  - opening_brace
+  - leading_whitespace
+  - colon
 
 excluded:
   - .build
