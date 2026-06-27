@@ -1,0 +1,142 @@
+VoiceInk/Services/AIEnhancement/CustomAIProviderManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 50
+VoiceInk/Services/AudioFileTranscriptionService.swift
+  s_40eddfca1692d0::t_8a505081a203ae 75
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 14
+VoiceInk/Transcription/Engine/AudioFileProcessor.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 6
+VoiceInk/CoreAudioRecorder.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 29,65
+VoiceInk/Transcription/Engine/TranscriptionModelManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 13
+VoiceInk/Services/AudioDeviceManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 20
+VoiceInk/Services/ModelPrewarmService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 11
+VoiceInk/Transcription/Engine/TranscriptionSession.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 60
+VoiceInk/Views/ContentView.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 18
+VoiceInk/Services/TranscriptionAutoCleanupService.swift
+  s_40eddfca1692d0::t_cce52fbae3b319 12
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 8
+VoiceInk/WindowManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 12
+VoiceInk/VoiceInk.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 53,224
+  s_40eddfca1692d0::t_322885104914e0 103
+  s_40eddfca1692d0::t_f08fb522325d3f 49-52
+  s_40eddfca1692d0::t_ceee95cdf110e5 204,206,208-210
+VoiceInk/Transcription/Cloud/CustomCloudModelManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 7
+VoiceInk/Services/APIKeyManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 8
+VoiceInk/Services/AIEnhancement/AIEnhancementService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 9
+VoiceInk/Transcription/Engine/RecorderUIManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 65
+VoiceInk/Transcription/Engine/TranscriptionPipeline.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 29
+VoiceInk/Transcription/FluidAudio/FluidAudioModelManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 27
+VoiceInk/Transcription/Native/NativeAppleTranscriptionService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 12
+VoiceInk/Services/QuillPaths.swift
+  s_40eddfca1692d0::t_6fb0d34c077097 13,15-20,45-50,71-72,74,80,83,86-103,107,112-113,115
+  s_40eddfca1692d0::t_67993286696dad 1-12,14,21-44,51-70,73,75-79,81-82,84-85,104-106,108-111,114,116-118
+VoiceInk/Transcription/Whisper/LibWhisper.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 18
+VoiceInk/Views/Dashboard/DashboardContent.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 7
+VoiceInk/Transcription/Native/NativeAppleSpeechAssetManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 20
+VoiceInk/Services/LogExporter.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 7-8
+VoiceInk/Services/KeychainService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 11-12
+VoiceInk/Services/AudioDeviceConfiguration.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 8
+VoiceInk/Transcription/Engine/TranscriptionDelivery.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 6
+VoiceInk/Transcription/Engine/TranscriptionServiceRegistry.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 11
+VoiceInk/CustomSoundManager.swift
+  s_40eddfca1692d0::t_c4f2b7342a3286 187
+VoiceInk/Services/SessionMetricMigrationService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 9
+VoiceInk/Transcription/FluidAudio/FluidAudioTranscriptionService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 14
+VoiceInk/Transcription/Streaming/FluidAudioNemotronStreamingProvider.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 7
+VoiceInk/Services/AudioFileTranscriptionManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 22
+  s_40eddfca1692d0::t_51c60c1ff26a47 147
+VoiceInk/Services/DictionaryService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 6
+VoiceInk/Services/SessionMetricRecorder.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 6
+BUILDING.md
+  s_40eddfca1692d0::t_531046bf7f7ab4 47
+VoiceInk/Transcription/Streaming/FluidAudioUnifiedStreamingProvider.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 7
+VoiceInk/Shortcuts/ShortcutMonitor.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 31
+Makefile
+  s_40eddfca1692d0::t_6faa0a1a63a9de 1-5
+VoiceInk/Transcription/Streaming/StreamingTranscriptionService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 109
+VoiceInk/Transcription/Whisper/VADModelManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 6
+VoiceInk.xcodeproj/project.pbxproj
+  s_40eddfca1692d0::t_f3000b2d7d5fca 61
+VoiceInk/Modes/BrowserURLService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 83
+VoiceInk/SoundPlaybackEngine.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 12-13
+VoiceInk/Transcription/Whisper/WhisperTranscriptionService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 8
+VoiceInk/Recorder.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 9,18,20
+VoiceInk/Services/SelectedTextService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 8
+.github/workflows/ci.yml
+  s_40eddfca1692d0::t_e0a733200735ae 63-64,100-101
+VoiceInk/Paste/CursorPaster.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 9
+VoiceInk/Services/ShellCommandEnvironment.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 5
+VoiceInk/HistoryWindowController.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 9
+CLAUDE.md
+  s_40eddfca1692d0::t_028a1f0a899163 262
+  s_40eddfca1692d0::t_2f995af4aa16de 56-75,84-92
+  s_40eddfca1692d0::t_ff794679b7c373 76-83
+  s_40eddfca1692d0::t_0434ef941c71cb 164-171
+VoiceInk/Modes/ActiveWindowService.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 11
+VoiceInk/Transcription/Engine/CustomCommandDeliveryRunner.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 53
+VoiceInk/Transcription/Streaming/FluidAudioStreamingProvider.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 8
+VoiceInk/Transcription/Engine/VoiceInkEngine.swift
+  s_40eddfca1692d0::t_78f635cdc7578e 145
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 124
+VoiceInk/Transcription/Whisper/WhisperModelManager.swift
+  s_40eddfca1692d0::t_b35c1f2d5fa5d4 76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "2abf9e10409b8bcdf3d8fc883a4f85ec7d4b3f37",
+  "prompts": {},
+  "sessions": {
+    "s_40eddfca1692d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9394e7b1-f7aa-4bae-b9bc-189cdb04ce38",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
