@@ -80,50 +80,71 @@ enum QuillPaths {
 
         // Old runtime root: ~/Library/Application Support/com.prakashjoshipax.VoiceInk
         // (held WhisperModels/, Recordings/, and the default/dictionary/stats stores,
-        // including their -shm/-wal sidecar files). Merge its whole contents into ~/.quill.
+        // including their -shm/-wal sidecar files). Merge its whole contents into base.
         let legacyRoot = appSupport.appendingPathComponent("com.prakashjoshipax.VoiceInk", isDirectory: true)
-        copyTree(from: legacyRoot, to: base, fm: fm)
+        let rootCopied = copyTree(from: legacyRoot, to: base, fm: fm)
 
         // Old custom sounds: ~/Library/Application Support/VoiceInk/CustomSounds
         let legacyCustomSounds = appSupport
             .appendingPathComponent("VoiceInk", isDirectory: true)
             .appendingPathComponent("CustomSounds", isDirectory: true)
-        copyTree(from: legacyCustomSounds, to: customSounds, fm: fm)
+        let soundsCopied = copyTree(from: legacyCustomSounds, to: customSounds, fm: fm)
 
+        // Only mark migration complete when every copy succeeded. If any failed, leave
+        // the flag unset so the next launch retries (the copy is idempotent) — otherwise
+        // a one-off failure would strand legacy data in the old location behind an empty
+        // ~/.quill with no automatic recovery.
+        guard rootCopied && soundsCopied else {
+            logger.error("Storage migration had copy failures; leaving it pending to retry on next launch")
+            return
+        }
         defaults.set(true, forKey: migrationDefaultsKey)
-        logger.info("Completed one-time storage migration (copy) into \(base.path, privacy: .public)")
+        logger.info("Completed one-time storage migration (copy) into \(base.path, privacy: .private)")
     }
 
     /// Recursively copies `source` into `destination`, **never deleting anything**:
     /// - directories are merged (the destination dir is created if missing, then
     ///   each child is copied into it),
     /// - files are copied only when the destination does not already exist, so a
-    ///   value already present in `~/.quill` always wins and is never overwritten.
-    private static func copyTree(from source: URL, to destination: URL, fm: FileManager) {
+    ///   value already present in `base` always wins and is never overwritten.
+    ///
+    /// Returns `true` only if every item was copied or already present; a single
+    /// failure returns `false` so the caller can retry on the next launch. A missing
+    /// `source` counts as success (nothing to migrate).
+    @discardableResult
+    private static func copyTree(from source: URL, to destination: URL, fm: FileManager) -> Bool {
         var isDirectory: ObjCBool = false
-        guard fm.fileExists(atPath: source.path, isDirectory: &isDirectory) else { return }
+        guard fm.fileExists(atPath: source.path, isDirectory: &isDirectory) else { return true }
 
         if isDirectory.boolValue {
             if !fm.fileExists(atPath: destination.path) {
-                try? fm.createDirectory(at: destination, withIntermediateDirectories: true)
+                do {
+                    try fm.createDirectory(at: destination, withIntermediateDirectories: true)
+                } catch {
+                    logger.error("Failed to create \(destination.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .private)")
+                    return false
+                }
             }
-            guard let children = try? fm.contentsOfDirectory(at: source, includingPropertiesForKeys: nil) else { return }
-            for child in children {
-                copyTree(from: child, to: destination.appendingPathComponent(child.lastPathComponent), fm: fm)
+            guard let children = try? fm.contentsOfDirectory(at: source, includingPropertiesForKeys: nil) else { return false }
+            var allCopied = true
+            for child in children where !copyTree(from: child, to: destination.appendingPathComponent(child.lastPathComponent), fm: fm) {
+                allCopied = false
             }
-            return
+            return allCopied
         }
 
         guard !fm.fileExists(atPath: destination.path) else {
-            logger.info("Skipping \(source.lastPathComponent, privacy: .public): already present in ~/.quill")
-            return
+            logger.info("Skipping \(source.lastPathComponent, privacy: .public): already present")
+            return true
         }
-        try? fm.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
         do {
+            try fm.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
             try fm.copyItem(at: source, to: destination)
-            logger.info("Copied \(source.lastPathComponent, privacy: .public) → \(destination.path, privacy: .public)")
+            logger.info("Copied \(source.lastPathComponent, privacy: .public) → \(destination.path, privacy: .private)")
+            return true
         } catch {
-            logger.error("Failed to copy \(source.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            logger.error("Failed to copy \(source.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .private)")
+            return false
         }
     }
 }

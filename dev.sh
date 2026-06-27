@@ -12,7 +12,10 @@ cd "$(dirname "$0")"
 # across rebuilds. Respect an explicit QUILL_SIGN_IDENTITY; otherwise use the conventional
 # local cert when it exists, and tell the user how to create it once if it doesn't.
 LOCAL_SIGN_IDENTITY="${QUILL_SIGN_IDENTITY:-Quill Local Signing}"
-if security find-identity -p codesigning 2>/dev/null | grep -qF "\"$LOCAL_SIGN_IDENTITY\""; then
+# Run `security` in a command substitution rather than piping into `grep -q`: under
+# `set -o pipefail`, grep -q closing the pipe early sends SIGPIPE to security, which
+# would make the pipeline "fail" and wrongly fall back to ad-hoc even when the cert exists.
+if grep -qF "\"$LOCAL_SIGN_IDENTITY\"" <<< "$(security find-identity -p codesigning 2>/dev/null || true)"; then
   export QUILL_SIGN_IDENTITY="$LOCAL_SIGN_IDENTITY"
   echo "Signing dev build with stable identity: $LOCAL_SIGN_IDENTITY (Accessibility grant will persist)"
 else
