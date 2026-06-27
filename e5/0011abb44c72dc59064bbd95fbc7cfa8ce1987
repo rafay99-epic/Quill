@@ -1,0 +1,35 @@
+dev.sh
+  s_40eddfca1692d0::t_3e853deb17a322 8-30
+VoiceInk/Views/Onboarding/PermissionStepRow.swift
+  s_40eddfca1692d0::t_9dcd95719cfa4b 116
+  s_40eddfca1692d0::t_8936bd370a197f 10
+VoiceInk/Views/Onboarding/OnboardingView.swift
+  s_40eddfca1692d0::t_408cd56deddb12 34
+VoiceInk/Views/Onboarding/OnboardingPermissionController.swift
+  s_40eddfca1692d0::t_e988beb3d4b320 155
+VoiceInk/Views/Onboarding/OnboardingCoordinator.swift
+  s_40eddfca1692d0::t_6de5d939ed91fa 430
+  s_40eddfca1692d0::t_f845fe6b9c1be5 441
+  s_40eddfca1692d0::t_e997eb60dcb35b 24-29
+  s_40eddfca1692d0::t_0875d197953b00 80
+VoiceInk/Views/Onboarding/OnboardingPermissionsScreen.swift
+  s_40eddfca1692d0::t_5c6973e3535029 8
+  s_40eddfca1692d0::t_372a8f71f0c8cc 36-59
+  s_40eddfca1692d0::t_936393e6f12571 69-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "e50011abb44c72dc59064bbd95fbc7cfa8ce1987",
+  "prompts": {},
+  "sessions": {
+    "s_40eddfca1692d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9394e7b1-f7aa-4bae-b9bc-189cdb04ce38",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
