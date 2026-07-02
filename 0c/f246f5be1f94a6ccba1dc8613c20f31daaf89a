@@ -1,0 +1,34 @@
+VoiceInk/Views/Settings/SettingsView.swift
+  s_7a2303c13a3759::t_e5a2d7f2ec4b7c 21
+  s_7a2303c13a3759::t_e88aa85d3767bc 149-155,160
+VoiceInk/Views/History/HistorySettingsPanel.swift
+  s_7a2303c13a3759::t_5b7b244db8a461 11-12
+  s_7a2303c13a3759::t_4e289145f17192 59-60,64
+VoiceInk/Paste/CursorPaster.swift
+  s_7a2303c13a3759::t_4b7ffabfd29abe 49-52
+VoiceInk/Views/Settings/AudioCleanupManager.swift
+  s_7a2303c13a3759::t_a0002b74887bb7 44,63-88
+  s_7a2303c13a3759::t_d8edbee3c8baf5 200
+  s_7a2303c13a3759::t_1e8b85899cf32e 9-10,12-15,17,20-21,31-43
+  s_7a2303c13a3759::t_ce13eff2a16ae4 277-281
+  s_7a2303c13a3759::t_2cf12289c8ca44 134
+VoiceInk/AppDefaults.swift
+  s_7a2303c13a3759::t_32115efa96e043 23
+  s_7a2303c13a3759::t_038c0a83d6fdf4 42-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "0cf246f5be1f94a6ccba1dc8613c20f31daaf89a",
+  "prompts": {},
+  "sessions": {
+    "s_7a2303c13a3759": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "faee2fcb-4494-4fa2-b09f-e65f711cd458",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
