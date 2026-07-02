@@ -1,0 +1,27 @@
+VoiceInk/VoiceInk.swift
+  s_7a2303c13a3759::t_4d0e30393bfc2e 171-176
+VoiceInk/Views/History/HistorySettingsPanel.swift
+  s_7a2303c13a3759::t_f1b8c2577189be 16
+  s_7a2303c13a3759::t_c067a1e9858614 165-166
+VoiceInk/Views/Settings/AudioCleanupManager.swift
+  s_7a2303c13a3759::t_8fc4b74d67278b 149-155
+  s_7a2303c13a3759::t_9b03afe8d6c5a1 175-176,197-205,216-244,246
+  s_7a2303c13a3759::t_eb561bbc821393 45,52,86-96,99
+  s_7a2303c13a3759::t_87a5d401807d92 245
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.9",
+  "base_commit_sha": "1df6dab340a253dc2acf5ac3ce3e42f18ce6dd77",
+  "prompts": {},
+  "sessions": {
+    "s_7a2303c13a3759": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "faee2fcb-4494-4fa2-b09f-e65f711cd458",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
