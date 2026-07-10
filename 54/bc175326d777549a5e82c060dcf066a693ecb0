@@ -1,0 +1,20 @@
+VoiceInk/PlaybackController.swift
+  s_3d08b1b81ec450::t_2589cc5ad02cc1 19-22,26,29-41,43-51,54-55,61,69-79
+  s_3d08b1b81ec450::t_72ad044e80f68f 109-115,117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "54bc175326d777549a5e82c060dcf066a693ecb0",
+  "prompts": {},
+  "sessions": {
+    "s_3d08b1b81ec450": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12a25e60-785d-4ec9-99da-8ce0a1c3b3bf",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
