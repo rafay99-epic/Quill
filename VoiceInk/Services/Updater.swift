@@ -21,10 +21,6 @@ final class Updater {
     /// `owner/repo` the releases are published to. Must match the GitHub repo.
     static let repoSlug = "rafay99-epic/Quill"
 
-    /// Persisted "check automatically on launch" preference. Off by default — this
-    /// fork is deliberately conservative about replacing the patched build.
-    static let autoCheckDefaultsKey = "QuillAutoCheckUpdates"
-
     struct Available: Equatable {
         let version: String
         let title: String

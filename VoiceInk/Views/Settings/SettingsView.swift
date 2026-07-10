@@ -4,17 +4,11 @@ import Carbon.HIToolbox
 import LaunchAtLogin
 
 struct SettingsView: View {
-    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var updaterViewModel: UpdaterViewModel
     @EnvironmentObject private var menuBarManager: MenuBarManager
     @EnvironmentObject private var recordingShortcutManager: RecordingShortcutManager
     @EnvironmentObject private var recorderUIManager: RecorderUIManager
-    @EnvironmentObject private var transcriptionModelManager: TranscriptionModelManager
-    @EnvironmentObject private var enhancementService: AIEnhancementService
-    @ObservedObject private var mediaController = MediaController.shared
-    @ObservedObject private var playbackController = PlaybackController.shared
     @AppStorage("hasCompletedOnboardingV2") private var hasCompletedOnboardingV2 = true
-    @AppStorage("enableAnnouncements") private var enableAnnouncements = true
     @AppStorage("ShowMenuBarIcon") private var showMenuBarIcon = true
     @AppStorage("PrewarmModelOnWake") private var prewarmModelOnWake = false
     @AppStorage("restoreClipboardAfterPaste") private var restoreClipboardAfterPaste = true
@@ -246,20 +240,6 @@ struct SettingsView: View {
 
                 LaunchAtLogin.Toggle("Launch at Login")
 
-                Toggle("Auto-check Updates", isOn: Binding(
-                    get: { updaterViewModel.automaticallyChecksForUpdates },
-                    set: { updaterViewModel.setAutomaticallyChecksForUpdates($0) }
-                ))
-
-                Toggle("Show Announcements", isOn: $enableAnnouncements)
-                    .onChange(of: enableAnnouncements) { _, newValue in
-                        if newValue {
-                            AnnouncementsService.shared.start()
-                        } else {
-                            AnnouncementsService.shared.stop()
-                        }
-                    }
-
                 Toggle("Prewarm Model on Wake", isOn: $prewarmModelOnWake)
                     .help("Runs a quick local transcription right after your Mac wakes so your first dictation is faster. This uses some battery on every wake — leave it off for the best battery life.")
 
@@ -273,41 +253,6 @@ struct SettingsView: View {
                         showResetOnboardingAlert = true
                     }
                 }
-            }
-
-            Section {
-                LabeledContent("Export Settings") {
-                    Button("Export") {
-                        ImportExportService.shared.exportSettings(
-                            enhancementService: enhancementService,
-                            recordingShortcutManager: recordingShortcutManager,
-                            menuBarManager: menuBarManager,
-                            mediaController: mediaController,
-                            playbackController: playbackController,
-                            recorderUIManager: recorderUIManager,
-                            modelContext: modelContext
-                        )
-                    }
-                }
-
-                LabeledContent("Import Settings") {
-                    Button("Import") {
-                        ImportExportService.shared.importSettings(
-                            enhancementService: enhancementService,
-                            recordingShortcutManager: recordingShortcutManager,
-                            menuBarManager: menuBarManager,
-                            mediaController: mediaController,
-                            playbackController: playbackController,
-                            recorderUIManager: recorderUIManager,
-                            modelContext: modelContext,
-                            transcriptionModelManager: transcriptionModelManager
-                        )
-                    }
-                }
-            } header: {
-                Text("Backup")
-            } footer: {
-                Text("Export all settings, or choose specific categories when importing a backup.")
             }
 
             Section("Diagnostics") {

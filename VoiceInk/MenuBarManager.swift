@@ -80,8 +80,20 @@ class MenuBarManager: ObservableObject {
             guard let self else { return }
             let application = NSApplication.shared
             if self.isMenuBarOnly {
-                application.setActivationPolicy(.accessory)
+                // Order the window out BEFORE switching to .accessory, then re-assert on
+                // the next runloop tick. Toggling this while the app is active/frontmost
+                // otherwise leaves the Dock icon on screen: macOS won't drop it while a
+                // visible normal window is up, and the willClose-based re-assert in
+                // `windowDidClose` never fires for an orderOut (only for a real close).
+                // Hiding first (matching the working launch path) + re-asserting makes the
+                // live toggle actually remove the Dock icon.
                 WindowManager.shared.hideMainWindow()
+                application.setActivationPolicy(.accessory)
+                DispatchQueue.main.async {
+                    if self.isMenuBarOnly {
+                        application.setActivationPolicy(.accessory)
+                    }
+                }
             } else {
                 application.setActivationPolicy(.regular)
                 WindowManager.shared.showMainWindow()
