@@ -1,0 +1,33 @@
+dev.sh
+  s_3d08b1b81ec450::t_2dc893b70597c6 8-21
+VoiceInk/MenuBarManager.swift
+  s_3d08b1b81ec450::t_fa43ca2494a836 83-89,91-96
+VoiceInk/VoiceInk.swift
+  s_3d08b1b81ec450::t_d1df5d38a429dd 383-384,389-391
+AGENTS.md
+  s_8c1cf2c8099799::t_6436dda5e51d93 1-305
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "c6558ee70b9e7ca96687697d153f661a4f135b06",
+  "prompts": {},
+  "sessions": {
+    "s_3d08b1b81ec450": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12a25e60-785d-4ec9-99da-8ce0a1c3b3bf",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    },
+    "s_8c1cf2c8099799": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f48dc-b54b-7c71-9335-65c9f1dda35e",
+        "model": "unknown"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
