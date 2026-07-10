@@ -1,0 +1,39 @@
+dev.sh
+  s_3d08b1b81ec450::t_2dc893b70597c6 8-21
+VoiceInk/MenuBarManager.swift
+  s_3d08b1b81ec450::t_fa43ca2494a836 83-89,91-96
+VoiceInk/VoiceInk.swift
+  s_3d08b1b81ec450::t_d1df5d38a429dd 383-384,389-391
+AGENTS.md
+  s_8c1cf2c8099799::t_6436dda5e51d93 1-305
+VoiceInk/Views/Onboarding/OnboardingView.swift
+  s_3d08b1b81ec450::t_ccdd0cbde8cf3d 266-272
+VoiceInk/Views/Settings/SettingsView.swift
+  s_3d08b1b81ec450::t_1f97b1eed70cb2 5,8,13-19
+  s_3d08b1b81ec450::t_73b4ef4977d18f 267-293
+  s_3d08b1b81ec450::t_f40f32f7ea58d9 315-363
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "d4b464e5e04bd6f695c5d3cabcc42d89dca5f28d",
+  "prompts": {},
+  "sessions": {
+    "s_3d08b1b81ec450": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12a25e60-785d-4ec9-99da-8ce0a1c3b3bf",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    },
+    "s_8c1cf2c8099799": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f48dc-b54b-7c71-9335-65c9f1dda35e",
+        "model": "unknown"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
