@@ -1,0 +1,22 @@
+VoiceInk/Views/Settings/SettingsView.swift
+  s_3d08b1b81ec450::t_554f7c3244c3d7 19
+  s_3d08b1b81ec450::t_1e621cb24b7903 263-265
+VoiceInk/AppDefaults.swift
+  s_3d08b1b81ec450::t_9f0f20938308dd 60-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f0e7b23e4b88685134b9796ad41c9689199b64c2",
+  "prompts": {},
+  "sessions": {
+    "s_3d08b1b81ec450": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12a25e60-785d-4ec9-99da-8ce0a1c3b3bf",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
