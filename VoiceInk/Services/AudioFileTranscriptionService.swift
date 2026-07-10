@@ -124,9 +124,23 @@ class AudioTranscriptionService: ObservableObject {
                         modeName: modeName,
                         modeEmoji: modeEmoji
                     )
+                    newTranscription.transcriptionStatus = TranscriptionStatus.completed.rawValue
                     modelContext.insert(newTranscription)
+                    var didInsertSessionMetric = false
+                    do {
+                        didInsertSessionMetric = try SessionMetricRecorder.recordRecorderSession(
+                            transcription: newTranscription,
+                            model: model,
+                            in: modelContext
+                        )
+                    } catch {
+                        logger.error("Failed to record session metric: \(error, privacy: .public)")
+                    }
                     do {
                         try modelContext.save()
+                        if didInsertSessionMetric {
+                            NotificationCenter.default.post(name: .sessionMetricsDidChange, object: nil)
+                        }
                         NotificationCenter.default.post(name: .transcriptionCreated, object: newTranscription)
                         NotificationCenter.default.post(name: .transcriptionCompleted, object: newTranscription)
                     } catch {
@@ -148,9 +162,23 @@ class AudioTranscriptionService: ObservableObject {
                         modeName: modeName,
                         modeEmoji: modeEmoji
                     )
+                    newTranscription.transcriptionStatus = TranscriptionStatus.completed.rawValue
                     modelContext.insert(newTranscription)
+                    var didInsertSessionMetric = false
+                    do {
+                        didInsertSessionMetric = try SessionMetricRecorder.recordRecorderSession(
+                            transcription: newTranscription,
+                            model: model,
+                            in: modelContext
+                        )
+                    } catch {
+                        logger.error("Failed to record session metric: \(error, privacy: .public)")
+                    }
                     do {
                         try modelContext.save()
+                        if didInsertSessionMetric {
+                            NotificationCenter.default.post(name: .sessionMetricsDidChange, object: nil)
+                        }
                         NotificationCenter.default.post(name: .transcriptionCreated, object: newTranscription)
                         NotificationCenter.default.post(name: .transcriptionCompleted, object: newTranscription)
                     } catch {
@@ -174,9 +202,23 @@ class AudioTranscriptionService: ObservableObject {
                     modeName: modeName,
                     modeEmoji: modeEmoji
                 )
+                newTranscription.transcriptionStatus = TranscriptionStatus.completed.rawValue
                 modelContext.insert(newTranscription)
+                var didInsertSessionMetric = false
+                do {
+                    didInsertSessionMetric = try SessionMetricRecorder.recordRecorderSession(
+                        transcription: newTranscription,
+                        model: model,
+                        in: modelContext
+                    )
+                } catch {
+                    logger.error("Failed to record session metric: \(error, privacy: .public)")
+                }
                 do {
                     try modelContext.save()
+                    if didInsertSessionMetric {
+                        NotificationCenter.default.post(name: .sessionMetricsDidChange, object: nil)
+                    }
                     NotificationCenter.default.post(name: .transcriptionCompleted, object: newTranscription)
                 } catch {
                     logger.error("❌ Failed to save transcription: \(error, privacy: .public)")

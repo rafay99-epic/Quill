@@ -7,7 +7,10 @@ final class SessionMetricMigrationService {
     static let shared = SessionMetricMigrationService()
 
     private let logger = Logger(subsystem: "com.syntaxlabtechnology.quill", category: "SessionMetricMigrationService")
-    private let completionKey = "HasCompletedStatsMigration"
+    // V2 re-runs the backfill once more to pick up transcriptions the original pass
+    // missed — imported files (previously left .pending) and any other non-live paths.
+    // The per-transcriptionId existence check below keeps the re-run duplicate-free.
+    private let completionKey = "HasCompletedStatsMigrationV2"
     private(set) var isRunning = false
 
     private init() {}
@@ -32,12 +35,14 @@ final class SessionMetricMigrationService {
                         .map { $0.transcriptionId }
                 )
 
-                let descriptor = FetchDescriptor<Transcription>(
-                    predicate: #Predicate<Transcription> { $0.transcriptionStatus == "completed" }
-                )
+                let descriptor = FetchDescriptor<Transcription>()
                 let transcriptions = try backgroundContext.fetch(descriptor)
 
                 for transcription in transcriptions {
+                    // Backfill every real transcription (live, imported, assistant),
+                    // skipping only ones that never produced usable text.
+                    guard transcription.transcriptionStatus != TranscriptionStatus.failed.rawValue,
+                          transcription.transcriptionStatus != TranscriptionStatus.canceled.rawValue else { continue }
                     guard !existingIds.contains(transcription.id) else { continue }
 
                     let enhancementDuration = transcription.enhancementDuration.flatMap { $0 > 0 ? $0 : nil }

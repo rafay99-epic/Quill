@@ -3,6 +3,8 @@ import SwiftData
 import SwiftUI
 
 enum DashboardProductivityPeriod: String, CaseIterable, Identifiable, Sendable {
+    case lastThreeDays
+    case lastFiveDays
     case lastSevenDays
     case lastThirtyDays
     case thisYear
@@ -14,6 +16,8 @@ enum DashboardProductivityPeriod: String, CaseIterable, Identifiable, Sendable {
 
     var pickerTitle: LocalizedStringKey {
         switch self {
+        case .lastThreeDays: return "Last 3 Days"
+        case .lastFiveDays: return "Last 5 Days"
         case .lastSevenDays: return "Last 7 Days"
         case .lastThirtyDays: return "Last 30 Days"
         case .thisYear: return "This Year"
@@ -23,6 +27,8 @@ enum DashboardProductivityPeriod: String, CaseIterable, Identifiable, Sendable {
 
     var chartTitle: LocalizedStringKey {
         switch self {
+        case .lastThreeDays: return "3-Day Productivity"
+        case .lastFiveDays: return "5-Day Productivity"
         case .lastSevenDays: return "Weekly Productivity"
         case .lastThirtyDays: return "Monthly Productivity"
         case .thisYear: return "Yearly Productivity"
@@ -32,6 +38,8 @@ enum DashboardProductivityPeriod: String, CaseIterable, Identifiable, Sendable {
 
     var modelPerformanceStorageValue: String {
         switch self {
+        case .lastThreeDays: return "Last 3 Days"
+        case .lastFiveDays: return "Last 5 Days"
         case .lastSevenDays: return "Last 7 Days"
         case .lastThirtyDays: return "Last 30 Days"
         case .thisYear: return "This Year"
@@ -40,27 +48,21 @@ enum DashboardProductivityPeriod: String, CaseIterable, Identifiable, Sendable {
     }
 
     init(modelPerformanceStorageValue: String) {
-        if modelPerformanceStorageValue == Self.lastSevenDays.modelPerformanceStorageValue ||
-            modelPerformanceStorageValue == Self.lastSevenDays.rawValue {
-            self = .lastSevenDays
-        } else if modelPerformanceStorageValue == Self.lastThirtyDays.modelPerformanceStorageValue ||
-            modelPerformanceStorageValue == Self.lastThirtyDays.rawValue {
-            self = .lastThirtyDays
-        } else if modelPerformanceStorageValue == Self.thisYear.modelPerformanceStorageValue ||
-            modelPerformanceStorageValue == Self.thisYear.rawValue {
-            self = .thisYear
-        } else if modelPerformanceStorageValue == Self.allTime.modelPerformanceStorageValue ||
-            modelPerformanceStorageValue == Self.allTime.rawValue {
-            self = .allTime
-        } else {
-            self = .lastSevenDays
+        let match = Self.allCases.first {
+            modelPerformanceStorageValue == $0.modelPerformanceStorageValue ||
+            modelPerformanceStorageValue == $0.rawValue
         }
+        self = match ?? .lastSevenDays
     }
 
     func startDate(now: Date, calendar: Calendar) -> Date? {
         let todayStart = calendar.startOfDay(for: now)
 
         switch self {
+        case .lastThreeDays:
+            return calendar.date(byAdding: .day, value: -2, to: todayStart) ?? todayStart
+        case .lastFiveDays:
+            return calendar.date(byAdding: .day, value: -4, to: todayStart) ?? todayStart
         case .lastSevenDays:
             return calendar.date(byAdding: .day, value: -6, to: todayStart) ?? todayStart
         case .lastThirtyDays:
@@ -88,6 +90,8 @@ enum DashboardProductivityPeriod: String, CaseIterable, Identifiable, Sendable {
 struct DashboardPeriodWindows {
     let now: Date
     let calendar: Calendar
+    let recentThreeDayInterval: DateInterval
+    let recentFiveDayInterval: DateInterval
     let recentSevenDayInterval: DateInterval
     let recentThirtyDayInterval: DateInterval
     let thisYearInterval: DateInterval
@@ -99,12 +103,16 @@ struct DashboardPeriodWindows {
         self.calendar = calendar
 
         let todayStart = calendar.startOfDay(for: now)
+        let recentThreeDayStart = calendar.date(byAdding: .day, value: -2, to: todayStart) ?? todayStart
+        let recentFiveDayStart = calendar.date(byAdding: .day, value: -4, to: todayStart) ?? todayStart
         let recentSevenDayStart = calendar.date(byAdding: .day, value: -6, to: todayStart) ?? todayStart
         let recentThirtyDayStart = calendar.date(byAdding: .day, value: -29, to: todayStart) ?? todayStart
         let thisYearStart = calendar.dateInterval(of: .year, for: now)?.start ?? now
         let previousSevenDayStart = calendar.date(byAdding: .day, value: -7, to: recentSevenDayStart) ?? recentSevenDayStart
 
         self.thisYearStart = thisYearStart
+        self.recentThreeDayInterval = DateInterval(start: recentThreeDayStart, end: now)
+        self.recentFiveDayInterval = DateInterval(start: recentFiveDayStart, end: now)
         self.recentSevenDayInterval = DateInterval(start: recentSevenDayStart, end: now)
         self.recentThirtyDayInterval = DateInterval(start: recentThirtyDayStart, end: now)
         self.thisYearInterval = DateInterval(start: thisYearStart, end: now)
@@ -199,6 +207,18 @@ struct DashboardStatsSummary: Equatable, Sendable {
     var previousSevenDayCount: Int = 0
     var previousSevenDayWords: Int = 0
     var previousSevenDayDuration: TimeInterval = 0
+    var lastThreeDayCount: Int = 0
+    var lastThreeDayWords: Int = 0
+    var lastThreeDayDuration: TimeInterval = 0
+    var lastFiveDayCount: Int = 0
+    var lastFiveDayWords: Int = 0
+    var lastFiveDayDuration: TimeInterval = 0
+    var lastThreeDayProductivity: [DashboardProductivityPoint] = []
+    var lastFiveDayProductivity: [DashboardProductivityPoint] = []
+    var lastThreeDayModelUsage: [DashboardModelUsageSummary] = []
+    var lastFiveDayModelUsage: [DashboardModelUsageSummary] = []
+    var lastThreeDayPeakHours: DashboardPeakHoursSummary = .empty
+    var lastFiveDayPeakHours: DashboardPeakHoursSummary = .empty
     var lastThirtyDayCount: Int = 0
     var lastThirtyDayWords: Int = 0
     var lastThirtyDayDuration: TimeInterval = 0
@@ -242,6 +262,18 @@ extension DashboardStatsSummary {
 
     func totals(for period: DashboardProductivityPeriod) -> DashboardMetricTotals {
         switch period {
+        case .lastThreeDays:
+            return DashboardMetricTotals(
+                count: lastThreeDayCount,
+                words: lastThreeDayWords,
+                duration: lastThreeDayDuration
+            )
+        case .lastFiveDays:
+            return DashboardMetricTotals(
+                count: lastFiveDayCount,
+                words: lastFiveDayWords,
+                duration: lastFiveDayDuration
+            )
         case .lastSevenDays:
             return recentSevenDays
         case .lastThirtyDays:
@@ -263,6 +295,10 @@ extension DashboardStatsSummary {
 
     func productivity(for period: DashboardProductivityPeriod) -> [DashboardProductivityPoint] {
         switch period {
+        case .lastThreeDays:
+            return lastThreeDayProductivity
+        case .lastFiveDays:
+            return lastFiveDayProductivity
         case .lastSevenDays:
             return lastSevenDayProductivity
         case .lastThirtyDays:
@@ -276,6 +312,10 @@ extension DashboardStatsSummary {
 
     func modelUsage(for period: DashboardProductivityPeriod) -> [DashboardModelUsageSummary] {
         switch period {
+        case .lastThreeDays:
+            return lastThreeDayModelUsage
+        case .lastFiveDays:
+            return lastFiveDayModelUsage
         case .lastSevenDays:
             return lastSevenDayModelUsage
         case .lastThirtyDays:
@@ -289,6 +329,10 @@ extension DashboardStatsSummary {
 
     func peakHours(for period: DashboardProductivityPeriod) -> DashboardPeakHoursSummary {
         switch period {
+        case .lastThreeDays:
+            return lastThreeDayPeakHours
+        case .lastFiveDays:
+            return lastFiveDayPeakHours
         case .lastSevenDays:
             return lastSevenDayPeakHours
         case .lastThirtyDays:

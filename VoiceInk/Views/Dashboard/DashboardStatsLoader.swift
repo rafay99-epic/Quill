@@ -19,6 +19,18 @@ enum DashboardStatsLoader {
             var previousSevenDayCount = 0
             var previousSevenDayWords = 0
             var previousSevenDayDuration: TimeInterval = 0
+            var lastThreeDayCount = 0
+            var lastThreeDayWords = 0
+            var lastThreeDayDuration: TimeInterval = 0
+            var lastFiveDayCount = 0
+            var lastFiveDayWords = 0
+            var lastFiveDayDuration: TimeInterval = 0
+            var lastThreeDayTranscriptionUsage: [String: DashboardModelUsageAccumulator] = [:]
+            var lastThreeDayEnhancementUsage: [String: DashboardModelUsageAccumulator] = [:]
+            var lastFiveDayTranscriptionUsage: [String: DashboardModelUsageAccumulator] = [:]
+            var lastFiveDayEnhancementUsage: [String: DashboardModelUsageAccumulator] = [:]
+            var lastThreeDayPeakHours: [Int: DashboardPeakHourAccumulator] = [:]
+            var lastFiveDayPeakHours: [Int: DashboardPeakHourAccumulator] = [:]
             var lastThirtyDayCount = 0
             var lastThirtyDayWords = 0
             var lastThirtyDayDuration: TimeInterval = 0
@@ -89,6 +101,17 @@ enum DashboardStatsLoader {
                         previousSevenDayDuration += metric.audioDuration
                     }
 
+                    if windows.recentThreeDayInterval.contains(metric.timestamp) {
+                        lastThreeDayCount += 1
+                        lastThreeDayWords += metric.wordCount
+                        lastThreeDayDuration += metric.audioDuration
+                    }
+                    if windows.recentFiveDayInterval.contains(metric.timestamp) {
+                        lastFiveDayCount += 1
+                        lastFiveDayWords += metric.wordCount
+                        lastFiveDayDuration += metric.audioDuration
+                    }
+
                     if windows.recentThirtyDayInterval.contains(metric.timestamp) {
                         lastThirtyDayCount += 1
                         lastThirtyDayWords += metric.wordCount
@@ -118,6 +141,22 @@ enum DashboardStatsLoader {
 
                     let metricHour = calendar.component(.hour, from: metric.timestamp)
 
+                    if windows.recentThreeDayInterval.contains(metric.timestamp) {
+                        addModelUsage(
+                            for: metric,
+                            transcriptionUsage: &lastThreeDayTranscriptionUsage,
+                            enhancementUsage: &lastThreeDayEnhancementUsage
+                        )
+                        addPeakHour(for: metric, hour: metricHour, to: &lastThreeDayPeakHours)
+                    }
+                    if windows.recentFiveDayInterval.contains(metric.timestamp) {
+                        addModelUsage(
+                            for: metric,
+                            transcriptionUsage: &lastFiveDayTranscriptionUsage,
+                            enhancementUsage: &lastFiveDayEnhancementUsage
+                        )
+                        addPeakHour(for: metric, hour: metricHour, to: &lastFiveDayPeakHours)
+                    }
                     if windows.recentSevenDayInterval.contains(metric.timestamp) {
                         addModelUsage(
                             for: metric,
@@ -165,7 +204,7 @@ enum DashboardStatsLoader {
                 )
             }()
 
-            return DashboardStatsSummary(
+            var summary = DashboardStatsSummary(
                 totalCount: count,
                 totalWords: words,
                 totalDuration: duration,
@@ -206,6 +245,28 @@ enum DashboardStatsLoader {
                 thisYearPeakHours: Self.peakHoursSummary(from: thisYearPeakHours),
                 allTimePeakHours: Self.peakHoursSummary(from: allTimePeakHours)
             )
+
+            // 3- and 5-day windows: totals/usage/peak accumulated above; productivity
+            // is just the tail of the 7-day daily series.
+            summary.lastThreeDayCount = lastThreeDayCount
+            summary.lastThreeDayWords = lastThreeDayWords
+            summary.lastThreeDayDuration = lastThreeDayDuration
+            summary.lastFiveDayCount = lastFiveDayCount
+            summary.lastFiveDayWords = lastFiveDayWords
+            summary.lastFiveDayDuration = lastFiveDayDuration
+            summary.lastThreeDayProductivity = Array(lastSevenDayProductivity.suffix(3))
+            summary.lastFiveDayProductivity = Array(lastSevenDayProductivity.suffix(5))
+            summary.lastThreeDayModelUsage = Self.topModelUsage(
+                transcription: lastThreeDayTranscriptionUsage,
+                enhancement: lastThreeDayEnhancementUsage
+            )
+            summary.lastFiveDayModelUsage = Self.topModelUsage(
+                transcription: lastFiveDayTranscriptionUsage,
+                enhancement: lastFiveDayEnhancementUsage
+            )
+            summary.lastThreeDayPeakHours = Self.peakHoursSummary(from: lastThreeDayPeakHours)
+            summary.lastFiveDayPeakHours = Self.peakHoursSummary(from: lastFiveDayPeakHours)
+            return summary
         }
 
         return try await withTaskCancellationHandler {
