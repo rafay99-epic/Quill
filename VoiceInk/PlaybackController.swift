@@ -16,45 +16,49 @@ class PlaybackController: ObservableObject {
         didSet {
             UserDefaults.standard.set(isPauseMediaEnabled, forKey: "isPauseMediaEnabled")
 
-            if isPauseMediaEnabled {
-                startMediaTracking()
-            } else {
-                stopMediaTracking()
+            // No persistent listener is started/stopped here anymore (see `init`).
+            // When the feature is turned off, just drop any captured pause state.
+            if !isPauseMediaEnabled {
+                resetPauseState()
             }
         }
     }
-    
+
     private init() {
         mediaController = MediaRemoteAdapter.MediaController()
+        // Intentionally NOT calling `mediaController.startListening()`.
+        //
+        // `startListening()` spawns a persistent `perl … loop` helper process that
+        // streams every system now-playing update for the entire lifetime of the app
+        // (and kills+relaunches itself every 100 events). Keeping that alive 24/7 —
+        // even while Quill sits idle in the menu bar — is a continuous CPU/wake source
+        // that drains battery and keeps the MediaRemote daemons busy. It is the single
+        // largest idle cost in the app.
+        //
+        // We don't need a live stream: media only needs pausing/resuming around an
+        // actual recording. So we query now-playing state on demand with the adapter's
+        // one-shot `getTrackInfo` (a short-lived `perl … get` that exits immediately),
+        // and `pause()` works without a listener (it falls back to a one-shot command).
+    }
 
-        setupMediaControllerCallbacks()
-
-        if isPauseMediaEnabled {
-            startMediaTracking()
+    /// Fetches the current now-playing info once, via the adapter's one-shot `get`
+    /// (no persistent listener). The adapter guarantees the callback fires exactly
+    /// once — a parsed value, or `nil` when nothing is playing / on process exit.
+    private func currentTrackInfo() async -> TrackInfo? {
+        await withCheckedContinuation { continuation in
+            mediaController.getTrackInfo { trackInfo in
+                continuation.resume(returning: trackInfo)
+            }
         }
     }
-    
-    private func setupMediaControllerCallbacks() {
-        mediaController.onTrackInfoReceived = { [weak self] trackInfo in
-            self?.isMediaPlaying = trackInfo?.payload.isPlaying ?? false
-            self?.lastKnownTrackInfo = trackInfo
-        }
-        
-        mediaController.onListenerTerminated = { }
-    }
-    
-    private func startMediaTracking() {
-        mediaController.startListening()
-    }
-    
-    private func stopMediaTracking() {
-        mediaController.stopListening()
+
+    private func resetPauseState() {
         isMediaPlaying = false
         lastKnownTrackInfo = nil
         wasPlayingWhenRecordingStarted = false
         originalMediaAppBundleId = nil
     }
-    
+
     func pauseMedia() async {
         resumeTask?.cancel()
         resumeTask = nil
@@ -62,18 +66,22 @@ class PlaybackController: ObservableObject {
         wasPlayingWhenRecordingStarted = false
         originalMediaAppBundleId = nil
 
-        guard isPauseMediaEnabled,
-              isMediaPlaying,
-              lastKnownTrackInfo?.payload.isPlaying == true,
-              let bundleId = lastKnownTrackInfo?.payload.bundleIdentifier else {
+        guard isPauseMediaEnabled else { return }
+
+        // Read the current now-playing state on demand instead of relying on a
+        // continuously-running listener. The round-trip also gives in-flight media
+        // state a moment to settle (replacing the old fixed 50 ms sleep).
+        let trackInfo = await currentTrackInfo()
+        lastKnownTrackInfo = trackInfo
+        isMediaPlaying = trackInfo?.payload.isPlaying ?? false
+
+        guard trackInfo?.payload.isPlaying == true,
+              let bundleId = trackInfo?.payload.bundleIdentifier else {
             return
         }
 
         wasPlayingWhenRecordingStarted = true
         originalMediaAppBundleId = bundleId
-
-        try? await Task.sleep(nanoseconds: 50_000_000)
-        guard !Task.isCancelled else { return }
 
         mediaController.pause()
     }
@@ -98,10 +106,15 @@ class PlaybackController: ObservableObject {
             return
         }
 
-        guard let currentTrackInfo = lastKnownTrackInfo,
-              let currentBundleId = currentTrackInfo.payload.bundleIdentifier,
+        // Re-read current state on demand (no live listener): only resume if the same
+        // app we paused is still the now-playing app and is currently paused — so we
+        // never fight the user if they already resumed it or switched to something else.
+        let trackInfo = await currentTrackInfo()
+        lastKnownTrackInfo = trackInfo
+        guard let trackInfo,
+              let currentBundleId = trackInfo.payload.bundleIdentifier,
               currentBundleId == bundleId,
-              currentTrackInfo.payload.isPlaying == false else {
+              trackInfo.payload.isPlaying == false else {
             return
         }
 

@@ -16,6 +16,7 @@ struct SettingsView: View {
     @AppStorage("hasCompletedOnboardingV2") private var hasCompletedOnboardingV2 = true
     @AppStorage("enableAnnouncements") private var enableAnnouncements = true
     @AppStorage("ShowMenuBarIcon") private var showMenuBarIcon = true
+    @AppStorage("PrewarmModelOnWake") private var prewarmModelOnWake = false
     @AppStorage("restoreClipboardAfterPaste") private var restoreClipboardAfterPaste = true
     @AppStorage("clipboardRestoreDelay") private var clipboardRestoreDelay = 2.0
     @AppStorage("keepTranscriptOnClipboard") private var keepTranscriptOnClipboard = true
@@ -258,6 +259,9 @@ struct SettingsView: View {
                             AnnouncementsService.shared.stop()
                         }
                     }
+
+                Toggle("Prewarm Model on Wake", isOn: $prewarmModelOnWake)
+                    .help("Runs a quick local transcription right after your Mac wakes so your first dictation is faster. This uses some battery on every wake — leave it off for the best battery life.")
 
                 HStack {
                     Button("Check for Updates") {
