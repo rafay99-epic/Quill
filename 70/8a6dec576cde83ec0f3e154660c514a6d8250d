@@ -1,0 +1,23 @@
+VoiceInk/Views/Onboarding/OnboardingView.swift
+  s_3d08b1b81ec450::t_ccdd0cbde8cf3d 266-272
+VoiceInk/Views/Settings/SettingsView.swift
+  s_3d08b1b81ec450::t_1f97b1eed70cb2 5,8,13-19
+  s_3d08b1b81ec450::t_73b4ef4977d18f 267-293
+  s_3d08b1b81ec450::t_f40f32f7ea58d9 315-363
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "708a6dec576cde83ec0f3e154660c514a6d8250d",
+  "prompts": {},
+  "sessions": {
+    "s_3d08b1b81ec450": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12a25e60-785d-4ec9-99da-8ce0a1c3b3bf",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
