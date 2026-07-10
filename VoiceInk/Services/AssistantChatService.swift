@@ -96,15 +96,7 @@ final class AssistantChatService {
         )
 
         modelContext.insert(transcription)
-        let didInsertSessionMetric = (try? SessionMetricRecorder.recordRecorderSession(
-            transcription: transcription,
-            model: nil,
-            in: modelContext
-        )) ?? false
         try modelContext.save()
-        if didInsertSessionMetric {
-            NotificationCenter.default.post(name: .sessionMetricsDidChange, object: nil)
-        }
         NotificationCenter.default.post(name: .transcriptionCreated, object: transcription)
         NotificationCenter.default.post(name: .transcriptionCompleted, object: transcription)
     }

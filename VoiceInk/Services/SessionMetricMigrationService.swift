@@ -39,10 +39,16 @@ final class SessionMetricMigrationService {
                 let transcriptions = try backgroundContext.fetch(descriptor)
 
                 for transcription in transcriptions {
-                    // Backfill every real transcription (live, imported, assistant),
-                    // skipping only ones that never produced usable text.
+                    // Backfill every real transcription (live, imported, assistant) that
+                    // actually produced text. Skip failed/canceled, and skip empty-text
+                    // rows — notably the .pending record the live recorder saves BEFORE
+                    // transcribing. Without this an in-flight dictation running during the
+                    // one-time migration would get a phantom 0-word metric that then blocks
+                    // its real metric via the per-id dedup, and crash-orphaned .pending rows
+                    // would add phantom empty sessions to the totals.
                     guard transcription.transcriptionStatus != TranscriptionStatus.failed.rawValue,
                           transcription.transcriptionStatus != TranscriptionStatus.canceled.rawValue else { continue }
+                    guard !transcription.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
                     guard !existingIds.contains(transcription.id) else { continue }
 
                     let enhancementDuration = transcription.enhancementDuration.flatMap { $0 > 0 ? $0 : nil }

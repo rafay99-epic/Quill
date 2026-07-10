@@ -171,14 +171,17 @@ identity/team (so it doesn't violate the rule above):
   falls back to ad-hoc, so a fresh clone still builds.
 - `Scripts/make-signing-cert.sh` generates the cert, imports it to the login keychain,
   and prints a base64 `.p12` for CI. Run it once locally.
-- **`dev.sh` auto-prefers the stable cert:** if `QUILL_SIGN_IDENTITY` is unset it uses
-  the conventional **`Quill Local Signing`** identity when that cert exists in the
-  keychain (so dev builds keep one signature and the Accessibility grant survives every
-  rebuild); if it's missing, `dev.sh` prints a one-time hint to run `make-signing-cert.sh`
-  and falls back to ad-hoc. This is why the onboarding "Recheck" silently fails on plain
-  ad-hoc dev builds — the rebuilt binary's CDHash no longer matches the old TCC grant, so
-  `AXIsProcessTrusted()` correctly returns `false`. Onboarding now also shows an
-  Accessibility recovery hint (toggle off/on + relaunch) for this case.
+- **`dev.sh` signs ad-hoc on purpose** (`export QUILL_SIGN_IDENTITY=""`, forced so a
+  `Quill Local Signing` identity exported from your shell/`~/.zshrc` can't re-trigger a
+  keychain-access prompt): no certificate, no keychain, no password prompts. Only
+  Stable/`main` + CI (`build.sh`) use the stable **`Quill Local Signing`** identity.
+  Tradeoff, accepted deliberately: an ad-hoc signature changes on every build, so macOS
+  keys the Accessibility (TCC) grant to a signature that no longer exists after a rebuild
+  — the dictation hotkey and the onboarding "Recheck" (`AXIsProcessTrusted()` returns
+  `false`) break until you re-grant Accessibility to **Quill Dev** (toggle off/on +
+  relaunch). That's fine for a throwaway dev build and avoids the keychain prompt.
+  Onboarding shows an Accessibility recovery hint for this case, and on the Dev channel a
+  "Skip" button always appears so you can bypass onboarding entirely while testing.
 - **CI** (`ci.yml` package+release, `nightly.yml` release) calls
   `.github/scripts/setup-signing.sh`, which imports the cert from the
   **`MACOS_SIGN_CERT_P12`** / **`MACOS_SIGN_CERT_PASSWORD`** secrets into a throwaway
