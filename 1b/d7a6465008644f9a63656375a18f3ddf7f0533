@@ -1,0 +1,65 @@
+dev.sh
+  s_3d08b1b81ec450::t_2dc893b70597c6 8-21
+VoiceInk/MenuBarManager.swift
+  s_3d08b1b81ec450::t_fa43ca2494a836 83-89,91-96
+VoiceInk/VoiceInk.swift
+  s_3d08b1b81ec450::t_d1df5d38a429dd 383-384,389-391
+AGENTS.md
+  s_8c1cf2c8099799::t_6436dda5e51d93 1-305
+VoiceInk/Views/Onboarding/OnboardingView.swift
+  s_3d08b1b81ec450::t_ccdd0cbde8cf3d 266-272
+VoiceInk/Views/Settings/SettingsView.swift
+  s_3d08b1b81ec450::t_1f97b1eed70cb2 5,8,13-19
+  s_3d08b1b81ec450::t_73b4ef4977d18f 267-293
+  s_3d08b1b81ec450::t_f40f32f7ea58d9 315-363
+VoiceInk/Views/Dashboard/DashboardStatsModels.swift
+  s_3d08b1b81ec450::t_ea0cf5d80ec7c5 93-94,106-107,114-115
+  s_3d08b1b81ec450::t_55307d3f1778af 265-276
+  s_3d08b1b81ec450::t_b5183cc4232833 298-301
+  s_3d08b1b81ec450::t_4b87c8e53382d5 315-318
+  s_3d08b1b81ec450::t_7e94d11473335b 332-335
+  s_3d08b1b81ec450::t_24d281ce218cfb 6-7,19-20,30-31,41-42,51-53,55,62-65
+  s_3d08b1b81ec450::t_8d2ea1f67a5875 210-221
+VoiceInk/Views/Dashboard/DashboardStatsLoader.swift
+  s_3d08b1b81ec450::t_a1f918c6f50bd0 22-33
+  s_3d08b1b81ec450::t_cb912110a545a4 207
+  s_3d08b1b81ec450::t_96abb53e2fc865 104-114
+  s_3d08b1b81ec450::t_451f50a1fb1682 248-269
+  s_3d08b1b81ec450::t_22757987812e15 144-159
+VoiceInk/Views/Dashboard/DashboardProductivityCard.swift
+  s_3d08b1b81ec450::t_f7018379b7c5ad 142
+VoiceInk/Services/AudioFileTranscriptionManager.swift
+  s_3d08b1b81ec450::t_da80bcc1f8764a 245-247,249-258,260-262
+VoiceInk/Services/AssistantChatService.swift
+  s_3d08b1b81ec450::t_b3575565014ac2 99-103,105-107
+VoiceInk/Services/SessionMetricMigrationService.swift
+  s_3d08b1b81ec450::t_7059cb4d97d7c9 10-13
+  s_3d08b1b81ec450::t_95249775165737 38,42-45
+VoiceInk/Services/AudioFileTranscriptionService.swift
+  s_3d08b1b81ec450::t_1cb719e0f260fc 127,129-138,141-143,165,167-176,179-181
+  s_3d08b1b81ec450::t_7079025bac1892 205,207-216,219-221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "1bd7a6465008644f9a63656375a18f3ddf7f0533",
+  "prompts": {},
+  "sessions": {
+    "s_3d08b1b81ec450": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12a25e60-785d-4ec9-99da-8ce0a1c3b3bf",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    },
+    "s_8c1cf2c8099799": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f48dc-b54b-7c71-9335-65c9f1dda35e",
+        "model": "unknown"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}

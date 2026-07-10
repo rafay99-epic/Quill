@@ -1,0 +1,21 @@
+VoiceInk/Services/SessionMetricMigrationService.swift
+  s_3d08b1b81ec450::t_6e39df322fa78c 42-48,51
+CLAUDE.md
+  s_3d08b1b81ec450::t_d73b63ea3ee918 174-184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "041d7f18416ba7cfff27483e8b1f999017b5d4a7",
+  "prompts": {},
+  "sessions": {
+    "s_3d08b1b81ec450": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "12a25e60-785d-4ec9-99da-8ce0a1c3b3bf",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Abdul Rafay <99marafay@gmail.com>"
+    }
+  }
+}
