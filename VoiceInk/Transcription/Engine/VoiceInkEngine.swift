@@ -157,7 +157,6 @@ class VoiceInkEngine: NSObject, ObservableObject {
 
         super.init()
 
-        setupNotifications()
         createRecordingsDirectoryIfNeeded()
     }
 
@@ -676,26 +675,6 @@ class VoiceInkEngine: NSObject, ObservableObject {
         logger.notice("cleanupResources: completed")
     }
 
-    // MARK: - Notification Handling
-
-    func setupNotifications() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handlePromptChange),
-            name: .promptDidChange,
-            object: nil
-        )
-    }
-
-    @objc func handlePromptChange() {
-        Task {
-            let currentPrompt = UserDefaults.standard.string(forKey: "TranscriptionPrompt")
-                ?? whisperModelManager.whisperPrompt.transcriptionPrompt
-            if let context = whisperModelManager.whisperContext {
-                await context.setPrompt(currentPrompt)
-            }
-        }
-    }
 }
 
 enum AudioFileMetadata {

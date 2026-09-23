@@ -599,6 +599,14 @@ struct AudioPlayerView: View {
         }
 
         let enhancementConfiguration = baseEnhancementConfiguration.replacingPrompt(selectedPrompt)
+        let previousEnhancedText = transcription.enhancedText
+        let previousCorrectedText = transcription.correctedText
+        let previousEnhancementModelName = transcription.aiEnhancementModelName
+        let previousPromptName = transcription.promptName
+        let previousEnhancementDuration = transcription.enhancementDuration
+        let previousSystemMessage = transcription.aiRequestSystemMessage
+        let previousUserMessage = transcription.aiRequestUserMessage
+        let sourceText = transcription.preferredText
 
         isReEnhancing = true
         operationFeedback = nil
@@ -606,20 +614,34 @@ struct AudioPlayerView: View {
         Task {
             do {
                 let (enhancedText, enhancementDuration, promptName) = try await enhancementService.enhance(
-                    transcription.text,
+                    sourceText,
                     configuration: enhancementConfiguration
                 )
                 await MainActor.run {
                     transcription.enhancedText = enhancedText
+                    transcription.correctedText = nil
                     transcription.aiEnhancementModelName = enhancementConfiguration.modelName ?? enhancementConfiguration.provider?.defaultModel
                     transcription.promptName = promptName
                     transcription.enhancementDuration = enhancementDuration
                     transcription.aiRequestSystemMessage = enhancementService.lastSystemMessageSent
                     transcription.aiRequestUserMessage = enhancementService.lastUserMessageSent
-                    try? modelContext.save()
 
-                    isReEnhancing = false
-                    showSuccessFeedback(.reEnhanceSuccess, title: String(localized: "Re-enhancement successful"))
+                    do {
+                        try modelContext.save()
+                        isReEnhancing = false
+                        showSuccessFeedback(.reEnhanceSuccess, title: String(localized: "Re-enhancement successful"))
+                    } catch {
+                        transcription.enhancedText = previousEnhancedText
+                        transcription.correctedText = previousCorrectedText
+                        transcription.aiEnhancementModelName = previousEnhancementModelName
+                        transcription.promptName = previousPromptName
+                        transcription.enhancementDuration = previousEnhancementDuration
+                        transcription.aiRequestSystemMessage = previousSystemMessage
+                        transcription.aiRequestUserMessage = previousUserMessage
+                        try? modelContext.save()
+                        isReEnhancing = false
+                        showErrorNotification(error.localizedDescription)
+                    }
                 }
             } catch {
                 await MainActor.run {

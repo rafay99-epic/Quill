@@ -64,6 +64,7 @@ final class AssistantChatService {
         promptName: String?
     ) {
         transcription.enhancedText = response.text
+        transcription.correctedText = nil
         transcription.aiEnhancementModelName = modelName ?? provider.defaultModel
         transcription.promptName = promptName
         transcription.enhancementDuration = response.duration

@@ -4,6 +4,8 @@ struct TranscriptionDetailView: View {
     let transcription: Transcription
     var onInfoTap: (() -> Void)?
 
+    @State private var isCorrectionPresented = false
+
     private var hasAudioFile: Bool {
         if let urlString = transcription.audioFileURL,
            let url = URL(string: urlString),
@@ -15,6 +17,18 @@ struct TranscriptionDetailView: View {
 
     var body: some View {
         VStack(spacing: 12) {
+            HStack {
+                Spacer()
+                Button {
+                    isCorrectionPresented = true
+                } label: {
+                    Label("Edit / Teach", systemImage: "pencil.and.list.clipboard")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+            .padding(.horizontal, 16)
+
             ScrollView {
                 VStack(spacing: 16) {
                     MessageBubble(
@@ -27,6 +41,14 @@ struct TranscriptionDetailView: View {
                         MessageBubble(
                             label: "Enhanced",
                             text: enhancedText,
+                            isEnhanced: true
+                        )
+                    }
+
+                    if let correctedText = transcription.correctedText {
+                        MessageBubble(
+                            label: "Corrected",
+                            text: correctedText,
                             isEnhanced: true
                         )
                     }
@@ -56,6 +78,11 @@ struct TranscriptionDetailView: View {
             }
         }
         .padding(.vertical, 12)
+        .sheet(isPresented: $isCorrectionPresented) {
+            TranscriptionCorrectionSheet(transcription: transcription) {
+                isCorrectionPresented = false
+            }
+        }
     }
 }
 

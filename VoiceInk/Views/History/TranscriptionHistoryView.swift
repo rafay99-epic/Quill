@@ -39,7 +39,8 @@ struct TranscriptionHistoryView: View {
             if !searchText.isEmpty {
                 descriptor.predicate = #Predicate<Transcription> { transcription in
                     (transcription.text.localizedStandardContains(searchText) ||
-                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)) &&
+                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false) ||
+                    (transcription.correctedText?.localizedStandardContains(searchText) ?? false)) &&
                     transcription.timestamp < timestamp
                 }
             } else {
@@ -50,7 +51,8 @@ struct TranscriptionHistoryView: View {
         } else if !searchText.isEmpty {
             descriptor.predicate = #Predicate<Transcription> { transcription in
                 transcription.text.localizedStandardContains(searchText) ||
-                (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)
+                (transcription.enhancedText?.localizedStandardContains(searchText) ?? false) ||
+                (transcription.correctedText?.localizedStandardContains(searchText) ?? false)
             }
         }
         
@@ -158,6 +160,13 @@ struct TranscriptionHistoryView: View {
                     await resetPagination()
                     await loadInitialContent()
                 }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .transcriptionCorrected)) { _ in
+            guard isViewCurrentlyVisible else { return }
+            Task {
+                await resetPagination()
+                await loadInitialContent()
             }
         }
     }
@@ -489,7 +498,8 @@ struct TranscriptionHistoryView: View {
             if !searchText.isEmpty {
                 allDescriptor.predicate = #Predicate<Transcription> { transcription in
                     transcription.text.localizedStandardContains(searchText) ||
-                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)
+                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false) ||
+                    (transcription.correctedText?.localizedStandardContains(searchText) ?? false)
                 }
             }
 

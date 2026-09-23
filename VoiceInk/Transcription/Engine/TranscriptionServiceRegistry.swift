@@ -39,13 +39,27 @@ class TranscriptionServiceRegistry {
 
     func transcribe(audioURL: URL, model: any TranscriptionModel, context: TranscriptionRequestContext = .currentDefaults) async throws -> String {
         let service = service(for: model.provider)
+        let requestContext = enrichedRequestContext(context, for: model)
         logger.debug("Transcribing with \(model.displayName, privacy: .public) using \(String(describing: type(of: service)), privacy: .public)")
-        return try await service.transcribe(audioURL: audioURL, model: model, context: context)
+        return try await service.transcribe(audioURL: audioURL, model: model, context: requestContext)
+    }
+
+    func applyLocalTextProcessing(to text: String) -> String {
+        let replacementDescriptor = FetchDescriptor<WordReplacement>(
+            predicate: #Predicate { $0.isEnabled }
+        )
+        let snippetDescriptor = FetchDescriptor<TextSnippet>(
+            predicate: #Predicate { $0.isEnabled }
+        )
+        let replacements = (try? modelContext.fetch(replacementDescriptor)) ?? []
+        let snippets = (try? modelContext.fetch(snippetDescriptor)) ?? []
+        return LocalTextProcessor.apply(to: text, replacements: replacements, snippets: snippets)
     }
 
     /// Creates a streaming or file-based session for the resolved transcription configuration.
     func createSession(for configuration: TranscriptionRuntimeConfiguration, onPartialTranscript: ((String) -> Void)? = nil) -> TranscriptionSession {
         let model = configuration.model
+        let context = enrichedRequestContext(configuration.requestContext, for: model)
 
         if shouldUseRealtimeTranscription(for: configuration) {
             let streamingService = StreamingTranscriptionService(
@@ -54,10 +68,35 @@ class TranscriptionServiceRegistry {
                 onPartialTranscript: onPartialTranscript
             )
             let fallback = service(for: model.provider)
-            return StreamingTranscriptionSession(streamingService: streamingService, fallbackService: fallback)
+            return StreamingTranscriptionSession(
+                streamingService: streamingService,
+                fallbackService: fallback,
+                context: context
+            )
         } else {
-            return FileTranscriptionSession(service: service(for: model.provider))
+            return FileTranscriptionSession(
+                service: service(for: model.provider),
+                context: context
+            )
         }
+    }
+
+    private func enrichedRequestContext(
+        _ context: TranscriptionRequestContext,
+        for model: any TranscriptionModel
+    ) -> TranscriptionRequestContext {
+        guard model.provider == .whisper else { return context }
+
+        let descriptor = FetchDescriptor<VocabularyWord>(sortBy: [SortDescriptor(\.word)])
+        let vocabulary = (try? modelContext.fetch(descriptor)) ?? []
+        let prompt = LocalTextProcessor.vocabularyPrompt(terms: vocabulary.map(\.word))
+        guard !prompt.isEmpty else { return context }
+
+        return TranscriptionRequestContext(
+            language: context.language,
+            prompt: context.prompt,
+            localVocabularyPrompt: prompt
+        )
     }
 
     /// Whether the resolved transcription configuration should use real-time transcription.

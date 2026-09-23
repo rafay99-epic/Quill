@@ -3,6 +3,13 @@ import Foundation
 struct TranscriptionRequestContext {
     let language: String?
     let prompt: String?
+    let localVocabularyPrompt: String?
+
+    init(language: String?, prompt: String?, localVocabularyPrompt: String? = nil) {
+        self.language = language
+        self.prompt = prompt
+        self.localVocabularyPrompt = localVocabularyPrompt
+    }
 
     static var currentDefaults: TranscriptionRequestContext {
         TranscriptionRequestContext(
