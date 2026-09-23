@@ -139,7 +139,7 @@ private struct DashboardProductivityPlot: View {
         switch period {
         case .allTime:
             return monthlyAxisLabel(for: point, at: index)
-        case .lastSevenDays, .lastThirtyDays, .thisYear:
+        case .lastThreeDays, .lastFiveDays, .lastSevenDays, .lastThirtyDays, .thisYear:
             return defaultAxisLabel(for: point, at: index)
         }
     }

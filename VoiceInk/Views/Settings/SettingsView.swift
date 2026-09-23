@@ -2,6 +2,7 @@ import SwiftUI
 import Cocoa
 import Carbon.HIToolbox
 import LaunchAtLogin
+import SwiftData
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -9,13 +10,16 @@ struct SettingsView: View {
     @EnvironmentObject private var menuBarManager: MenuBarManager
     @EnvironmentObject private var recordingShortcutManager: RecordingShortcutManager
     @EnvironmentObject private var recorderUIManager: RecorderUIManager
-    @EnvironmentObject private var transcriptionModelManager: TranscriptionModelManager
-    @EnvironmentObject private var enhancementService: AIEnhancementService
-    @ObservedObject private var mediaController = MediaController.shared
-    @ObservedObject private var playbackController = PlaybackController.shared
+    // Recording/data retention — same keys the History panel and AudioCleanupManager use,
+    // surfaced here so the setting is reachable from Settings, not only History.
+    @AppStorage(CleanupSettingsKeys.isAudioCleanupEnabled) private var isAudioCleanupEnabled = true
+    @AppStorage(CleanupSettingsKeys.audioRetentionPeriod) private var audioRetentionPeriod = 10
+    @State private var showEraseAllConfirmation = false
+    @State private var isErasingAllData = false
+    @State private var eraseResultMessage: String?
     @AppStorage("hasCompletedOnboardingV2") private var hasCompletedOnboardingV2 = true
-    @AppStorage("enableAnnouncements") private var enableAnnouncements = true
     @AppStorage("ShowMenuBarIcon") private var showMenuBarIcon = true
+    @AppStorage("PrewarmModelOnWake") private var prewarmModelOnWake = false
     @AppStorage("restoreClipboardAfterPaste") private var restoreClipboardAfterPaste = true
     @AppStorage("clipboardRestoreDelay") private var clipboardRestoreDelay = 2.0
     @AppStorage("keepTranscriptOnClipboard") private var keepTranscriptOnClipboard = true
@@ -245,19 +249,8 @@ struct SettingsView: View {
 
                 LaunchAtLogin.Toggle("Launch at Login")
 
-                Toggle("Auto-check Updates", isOn: Binding(
-                    get: { updaterViewModel.automaticallyChecksForUpdates },
-                    set: { updaterViewModel.setAutomaticallyChecksForUpdates($0) }
-                ))
-
-                Toggle("Show Announcements", isOn: $enableAnnouncements)
-                    .onChange(of: enableAnnouncements) { _, newValue in
-                        if newValue {
-                            AnnouncementsService.shared.start()
-                        } else {
-                            AnnouncementsService.shared.stop()
-                        }
-                    }
+                Toggle("Prewarm Model on Wake", isOn: $prewarmModelOnWake)
+                    .help("Runs a quick local transcription right after your Mac wakes so your first dictation is faster. This uses some battery on every wake — leave it off for the best battery life.")
 
                 HStack {
                     Button("Check for Updates") {
@@ -272,38 +265,30 @@ struct SettingsView: View {
             }
 
             Section {
-                LabeledContent("Export Settings") {
-                    Button("Export") {
-                        ImportExportService.shared.exportSettings(
-                            enhancementService: enhancementService,
-                            recordingShortcutManager: recordingShortcutManager,
-                            menuBarManager: menuBarManager,
-                            mediaController: mediaController,
-                            playbackController: playbackController,
-                            recorderUIManager: recorderUIManager,
-                            modelContext: modelContext
-                        )
+                Toggle("Auto-delete Audio Files", isOn: $isAudioCleanupEnabled)
+
+                if isAudioCleanupEnabled {
+                    Picker("Delete Recordings After", selection: $audioRetentionPeriod) {
+                        Text("Immediately").tag(0)
+                        Text("1 day").tag(1)
+                        Text("3 days").tag(3)
+                        Text("7 days").tag(7)
+                        Text("10 days").tag(10)
+                        Text("14 days").tag(14)
+                        Text("30 days").tag(30)
                     }
                 }
 
-                LabeledContent("Import Settings") {
-                    Button("Import") {
-                        ImportExportService.shared.importSettings(
-                            enhancementService: enhancementService,
-                            recordingShortcutManager: recordingShortcutManager,
-                            menuBarManager: menuBarManager,
-                            mediaController: mediaController,
-                            playbackController: playbackController,
-                            recorderUIManager: recorderUIManager,
-                            modelContext: modelContext,
-                            transcriptionModelManager: transcriptionModelManager
-                        )
-                    }
+                Button(role: .destructive) {
+                    showEraseAllConfirmation = true
+                } label: {
+                    Text(isErasingAllData ? "Erasing…" : "Erase All Data…")
                 }
+                .disabled(isErasingAllData)
             } header: {
-                Text("Backup")
+                Text("Recordings & Data")
             } footer: {
-                Text("Export all settings, or choose specific categories when importing a backup.")
+                Text("Auto-delete old recordings while keeping transcripts. “Erase All Data” permanently deletes every transcript, statistic, and audio recording.")
             }
 
             Section("Diagnostics") {
@@ -326,6 +311,55 @@ struct SettingsView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text("Your language change will take full effect after you quit and reopen Quill.")
+        }
+        .alert("Erase All Data?", isPresented: $showEraseAllConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Erase Everything", role: .destructive) { eraseAllData() }
+        } message: {
+            Text("This permanently deletes every transcript, statistic, and saved audio recording. This cannot be undone.")
+        }
+        .alert("Data Erased", isPresented: Binding(
+            get: { eraseResultMessage != nil },
+            set: { if !$0 { eraseResultMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { eraseResultMessage = nil }
+        } message: {
+            Text(eraseResultMessage ?? "")
+        }
+    }
+
+    /// Permanently deletes every transcript, session metric, and saved recording.
+    private func eraseAllData() {
+        guard !isErasingAllData else { return }
+        isErasingAllData = true
+        Task { @MainActor in
+            defer { isErasingAllData = false }
+            var deletedTranscripts = 0
+            var deletedMetrics = 0
+            do {
+                let transcriptions = try modelContext.fetch(FetchDescriptor<Transcription>())
+                deletedTranscripts = transcriptions.count
+                for transcription in transcriptions { modelContext.delete(transcription) }
+
+                let metrics = try modelContext.fetch(FetchDescriptor<SessionMetric>())
+                deletedMetrics = metrics.count
+                for metric in metrics { modelContext.delete(metric) }
+
+                try modelContext.save()
+            } catch {
+                eraseResultMessage = "Could not erase the database: \(error.localizedDescription)"
+                return
+            }
+
+            // Drop every saved recording by removing and recreating the folder.
+            let recordings = QuillPaths.recordings
+            try? FileManager.default.removeItem(at: recordings)
+            try? FileManager.default.createDirectory(at: recordings, withIntermediateDirectories: true)
+
+            // Recompute the dashboard (it reads from SessionMetric).
+            NotificationCenter.default.post(name: .sessionMetricsDidChange, object: nil)
+
+            eraseResultMessage = "Deleted \(deletedTranscripts) transcripts, \(deletedMetrics) statistics, and all audio recordings."
         }
     }
 

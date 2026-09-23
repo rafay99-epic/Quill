@@ -263,7 +263,13 @@ struct OnboardingView: View {
     }
 
     private var shouldShowSkipOnboardingButton: Bool {
-        coordinator.requiredPermissionsGranted && coordinator.stage != .permissions
+        // Dev builds: always allow skipping the entire onboarding (including the
+        // permissions stage) for fast iteration while testing. Stable is unchanged —
+        // the skip only appears once required permissions are granted.
+        if Channel.current == .dev {
+            return true
+        }
+        return coordinator.requiredPermissionsGranted && coordinator.stage != .permissions
     }
 
     private var skipOnboardingButton: some View {

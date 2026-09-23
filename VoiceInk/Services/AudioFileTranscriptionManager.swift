@@ -242,8 +242,24 @@ class AudioTranscriptionManager: ObservableObject {
                 )
             }
 
+            // Imported files complete synchronously here — mark them completed so they
+            // count in analytics (and read correctly in History) instead of staying .pending.
+            transcription.transcriptionStatus = TranscriptionStatus.completed.rawValue
             modelContext.insert(transcription)
+            var didInsertSessionMetric = false
+            do {
+                didInsertSessionMetric = try SessionMetricRecorder.recordRecorderSession(
+                    transcription: transcription,
+                    model: currentModel,
+                    in: modelContext
+                )
+            } catch {
+                logger.error("Failed to record session metric: \(error, privacy: .public)")
+            }
             try modelContext.save()
+            if didInsertSessionMetric {
+                NotificationCenter.default.post(name: .sessionMetricsDidChange, object: nil)
+            }
             NotificationCenter.default.post(name: .transcriptionCreated, object: transcription)
             NotificationCenter.default.post(name: .transcriptionCompleted, object: transcription)
 

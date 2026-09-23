@@ -14,7 +14,6 @@ enum AppDefaults {
             // Onboarding & General
             "hasCompletedOnboardingV2": false,
             "hasPreparedOnboardingV2": false,
-            "enableAnnouncements": true,
 
             // Clipboard
             "restoreClipboardAfterPaste": true,
@@ -57,7 +56,10 @@ enum AppDefaults {
             "EnhancementRetryOnTimeout": true,
 
             // Model
-            "PrewarmModelOnWake": true,
+            // Off by default for battery: prewarming runs a full local transcription
+            // on every wake from sleep (see ModelPrewarmService). Opt in via
+            // Settings → General → "Prewarm Model on Wake" for a faster first dictation.
+            "PrewarmModelOnWake": false,
 
         ])
 
