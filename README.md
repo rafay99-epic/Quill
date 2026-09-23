@@ -53,9 +53,8 @@ engine, the dashboard — is upstream VoiceInk's work.
 Apple Silicon, macOS 14.4+.
 
 ```sh
-brew tap rafay99-epic/homebrew-apps
-brew install --cask quill            # stable
-brew install --cask quill-nightly    # nightly channel (pre-release)
+brew install --cask rafay99-epic/apps/quill            # stable
+brew install --cask rafay99-epic/apps/quill-nightly    # nightly channel (pre-release)
 ```
 
 First launch (the build is ad-hoc signed, not notarized): right-click the app →
