@@ -56,12 +56,94 @@ enum DictionaryService {
         }
     }
 
+    @discardableResult
+    static func addTextSnippet(
+        trigger: String,
+        expansion: String,
+        existing: [TextSnippet],
+        context: ModelContext
+    ) -> String? {
+        let normalizedTrigger = trigger.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedExpansion = expansion.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if let error = validateTextSnippet(
+            trigger: normalizedTrigger,
+            expansion: normalizedExpansion,
+            existing: existing
+        ) {
+            return error
+        }
+
+        let snippet = TextSnippet(trigger: normalizedTrigger, expansion: normalizedExpansion)
+        context.insert(snippet)
+        do {
+            try context.save()
+            return nil
+        } catch {
+            context.rollback()
+            return String(format: String(localized: "Failed to add text snippet: %@"), error.localizedDescription)
+        }
+    }
+
+    @discardableResult
+    static func updateTextSnippet(
+        _ snippet: TextSnippet,
+        trigger: String,
+        expansion: String,
+        isEnabled: Bool? = nil,
+        existing: [TextSnippet],
+        context: ModelContext
+    ) -> String? {
+        let normalizedTrigger = trigger.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedExpansion = expansion.trimmingCharacters(in: .whitespacesAndNewlines)
+        let otherSnippets = existing.filter { $0.id != snippet.id }
+
+        if let error = validateTextSnippet(
+            trigger: normalizedTrigger,
+            expansion: normalizedExpansion,
+            existing: otherSnippets
+        ) {
+            return error
+        }
+
+        snippet.trigger = normalizedTrigger
+        snippet.expansion = normalizedExpansion
+        if let isEnabled {
+            snippet.isEnabled = isEnabled
+        }
+        do {
+            try context.save()
+            return nil
+        } catch {
+            context.rollback()
+            return String(format: String(localized: "Failed to update text snippet: %@"), error.localizedDescription)
+        }
+    }
+
+    private static func validateTextSnippet(
+        trigger: String,
+        expansion: String,
+        existing: [TextSnippet]
+    ) -> String? {
+        guard !trigger.isEmpty else {
+            return String(localized: "Trigger cannot be blank.")
+        }
+        guard !expansion.isEmpty else {
+            return String(localized: "Expansion cannot be blank.")
+        }
+        if existing.contains(where: { $0.trigger.lowercased() == trigger.lowercased() }) {
+            return String(format: String(localized: "'%@' already exists in text snippets"), trigger)
+        }
+        return nil
+    }
+
     // MARK: - Duplicate Cleanup
 
     @discardableResult
     static func removeExactDuplicateContent(context: ModelContext, source: String) -> Bool {
         var deletedVocabularyCount = 0
         var deletedReplacementCount = 0
+        var deletedSnippetCount = 0
 
         if let vocabularyWords = try? context.fetch(FetchDescriptor<VocabularyWord>()) {
             var seenWords = Set<String>()
@@ -97,13 +179,26 @@ enum DictionaryService {
             }
         }
 
-        guard deletedVocabularyCount > 0 || deletedReplacementCount > 0 else {
+        if let textSnippets = try? context.fetch(FetchDescriptor<TextSnippet>()) {
+            var seenSnippets = Set<[String]>()
+
+            for textSnippet in textSnippets.sorted(by: { $0.dateAdded < $1.dateAdded }) {
+                let key = [textSnippet.trigger, textSnippet.expansion]
+                guard seenSnippets.insert(key).inserted else {
+                    context.delete(textSnippet)
+                    deletedSnippetCount += 1
+                    continue
+                }
+            }
+        }
+
+        guard deletedVocabularyCount > 0 || deletedReplacementCount > 0 || deletedSnippetCount > 0 else {
             return false
         }
 
         do {
             try context.save()
-            logger.notice("Removed exact dictionary duplicates from \(source, privacy: .public): \(deletedVocabularyCount, privacy: .public) vocabulary, \(deletedReplacementCount, privacy: .public) word replacement")
+            logger.notice("Removed exact dictionary duplicates from \(source, privacy: .public): \(deletedVocabularyCount, privacy: .public) vocabulary, \(deletedReplacementCount, privacy: .public) word replacement, \(deletedSnippetCount, privacy: .public) text snippet")
             return true
         } catch {
             context.rollback()

@@ -20,16 +20,16 @@ protocol TranscriptionSession: AnyObject {
 @MainActor
 final class FileTranscriptionSession: TranscriptionSession {
     private let service: TranscriptionService
+    private let context: TranscriptionRequestContext
     private var model: (any TranscriptionModel)?
-    private var context: TranscriptionRequestContext = .currentDefaults
 
-    init(service: TranscriptionService) {
+    init(service: TranscriptionService, context: TranscriptionRequestContext = .currentDefaults) {
         self.service = service
+        self.context = context
     }
 
     func prepare(configuration: TranscriptionRuntimeConfiguration) async throws -> ((Data) -> Void)? {
         self.model = configuration.model
-        self.context = configuration.requestContext
         return nil
     }
 
@@ -52,24 +52,27 @@ final class FileTranscriptionSession: TranscriptionSession {
 final class StreamingTranscriptionSession: TranscriptionSession {
     private let streamingService: StreamingTranscriptionService
     private let fallbackService: TranscriptionService
+    private let context: TranscriptionRequestContext
     private var model: (any TranscriptionModel)?
-    private var context: TranscriptionRequestContext = .currentDefaults
     private var streamingFailed = false
     private var startupTask: Task<Void, Never>?
     private var startupTaskID: UUID?
     private let logger = Logger(subsystem: "com.syntaxlabtechnology.quill", category: "StreamingTranscriptionSession")
 
-    init(streamingService: StreamingTranscriptionService, fallbackService: TranscriptionService) {
+    init(
+        streamingService: StreamingTranscriptionService,
+        fallbackService: TranscriptionService,
+        context: TranscriptionRequestContext = .currentDefaults
+    ) {
         self.streamingService = streamingService
         self.fallbackService = fallbackService
+        self.context = context
     }
 
     func prepare(configuration: TranscriptionRuntimeConfiguration) async throws -> ((Data) -> Void)? {
         let model = configuration.model
-        let context = configuration.requestContext
 
         self.model = model
-        self.context = context
         logger.notice("Streaming session prepare model=\(model.displayName, privacy: .public)")
 
         // Return callback immediately; WebSocket connects in background

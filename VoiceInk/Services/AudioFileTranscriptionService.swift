@@ -67,7 +67,7 @@ class AudioTranscriptionService: ObservableObject {
                 text = ParagraphFormatter.format(text)
             }
 
-            text = WordReplacementService.shared.applyReplacements(to: text, using: modelContext)
+            text = serviceRegistry.applyLocalTextProcessing(to: text)
             let cleanedText = text
 
             let audioAsset = AVURLAsset(url: url)

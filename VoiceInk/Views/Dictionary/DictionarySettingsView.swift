@@ -3,18 +3,21 @@ import SwiftUI
 struct DictionarySettingsView: View {
     @State private var selectedSection: DictionarySection = .replacements
     @State private var isShowingSettings = false
-    private let dictionaryInfoMessage: LocalizedStringKey = "Word Replacements run after transcription. Vocabulary is used with AI enhancement to better understand names, technical terms, and unique spellings in your transcript."
+    private let dictionaryInfoMessage: LocalizedStringKey = "Vocabulary helps local Whisper recognize important names and terms. Word Replacements and Text Snippets run locally after transcription."
     
     enum DictionarySection: String, CaseIterable, Hashable {
         case replacements = "Word Replacements"
         case spellings = "Vocabulary"
+        case snippets = "Text Snippets"
         
         var description: String {
             switch self {
             case .spellings:
-                return String(localized: "Vocabulary is used only with AI enhancement to preserve important names, technical terms, and unique spellings in the final output.")
+                return String(localized: "Vocabulary helps local Whisper recognize important names, technical terms, and unique spellings. A small active list keeps prompts fast.")
             case .replacements:
                 return String(localized: "Word Replacements run after transcription to replace misheard words, phrases, abbreviations, or boilerplate text.")
+            case .snippets:
+                return String(localized: "Text Snippets expand short triggers into reusable text.")
             }
         }
 
@@ -24,6 +27,8 @@ struct DictionarySettingsView: View {
                 return "character.book.closed"
             case .replacements:
                 return "arrow.left.arrow.right"
+            case .snippets:
+                return "text.badge.plus"
             }
         }
     }
@@ -85,6 +90,8 @@ struct DictionarySettingsView: View {
             VocabularyView()
         case .replacements:
             WordReplacementView()
+        case .snippets:
+            TextSnippetView()
         }
     }
 }

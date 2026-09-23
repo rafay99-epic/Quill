@@ -15,6 +15,8 @@ struct AudioFileRow: View {
             return item.transcription?.text ?? ""
         case .enhanced:
             return item.transcription?.enhancedText ?? ""
+        case .corrected:
+            return item.transcription?.correctedText ?? ""
         }
     }
 
@@ -23,19 +25,26 @@ struct AudioFileRow: View {
         if isExpanded {
             return displayText
         }
-        return item.transcription?.enhancedText ?? item.transcription?.text ?? ""
+        return item.transcription?.preferredText ?? ""
     }
 
     var body: some View {
-        switch item.status {
-        case .pending:
-            pendingRow
-        case .processing(let phase):
-            processingRow(phase: phase)
-        case .completed:
-            completedRows
-        case .failed(let message):
-            failedRow(message: message)
+        Group {
+            switch item.status {
+            case .pending:
+                pendingRow
+            case .processing(let phase):
+                processingRow(phase: phase)
+            case .completed:
+                completedRows
+            case .failed(let message):
+                failedRow(message: message)
+            }
+        }
+        .onChange(of: item.transcription?.correctedText) { _, _ in
+            if selectedTab == .corrected, item.transcription?.correctedText == nil {
+                selectedTab = .original
+            }
         }
     }
 
@@ -101,7 +110,7 @@ struct AudioFileRow: View {
                 .truncationMode(.middle)
 
             if !isExpanded, let transcription = item.transcription {
-                Text(transcription.enhancedText ?? transcription.text)
+                Text(transcription.preferredText)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
             }
@@ -131,10 +140,15 @@ struct AudioFileRow: View {
         .onTapGesture { onToggleExpand() }
 
         if isExpanded, let transcription = item.transcription {
-            if transcription.enhancedText != nil {
+            if transcription.enhancedText != nil || transcription.correctedText != nil {
                 HStack(spacing: 4) {
                     tabButton(tab: .original)
-                    tabButton(tab: .enhanced)
+                    if transcription.enhancedText != nil {
+                        tabButton(tab: .enhanced)
+                    }
+                    if transcription.correctedText != nil {
+                        tabButton(tab: .corrected)
+                    }
                     Spacer()
                 }
             }

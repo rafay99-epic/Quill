@@ -15,6 +15,7 @@ final class Transcription {
     var id: UUID = UUID()
     var text: String = ""
     var enhancedText: String?
+    var correctedText: String?
     var timestamp: Date = Date()
     var duration: TimeInterval = 0
     var audioFileURL: String?
@@ -34,6 +35,7 @@ final class Transcription {
     init(text: String,
          duration: TimeInterval,
          enhancedText: String? = nil,
+         correctedText: String? = nil,
          audioFileURL: String? = nil,
          transcriptionModelName: String? = nil,
          aiEnhancementModelName: String? = nil,
@@ -48,6 +50,7 @@ final class Transcription {
         self.id = UUID()
         self.text = text
         self.enhancedText = enhancedText
+        self.correctedText = correctedText
         self.timestamp = Date()
         self.duration = duration
         self.audioFileURL = audioFileURL
@@ -63,12 +66,25 @@ final class Transcription {
         self.transcriptionStatus = transcriptionStatus.rawValue
     }
 
+    var preferredText: String {
+        if let correctedText, !correctedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return correctedText
+        }
+        if let enhancedText,
+           !enhancedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+           !enhancedText.hasPrefix("Enhancement failed:") {
+            return enhancedText
+        }
+        return text
+    }
+
     func markAsCanceledTranscription(
         duration: TimeInterval? = nil,
         modelName: String? = nil
     ) {
         text = Self.canceledTranscriptionText
         enhancedText = nil
+        correctedText = nil
         transcriptionStatus = TranscriptionStatus.canceled.rawValue
         if let duration {
             self.duration = duration

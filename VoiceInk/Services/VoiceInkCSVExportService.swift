@@ -23,12 +23,13 @@ class VoiceInkCSVExportService {
         }
     }
     
-    private func generateCSV(for transcriptions: [Transcription]) -> String {
-        var csvString = "Original Transcript,Enhanced Transcript,Enhancement Model,Prompt Name,Transcription Model,Mode,Enhancement Time,Transcription Time,Timestamp,Duration\n"
+    func generateCSV(for transcriptions: [Transcription]) -> String {
+        var csvString = "Original Transcript,Enhanced Transcript,Enhancement Model,Prompt Name,Transcription Model,Mode,Enhancement Time,Transcription Time,Timestamp,Duration,Corrected Transcript\n"
 
         for transcription in transcriptions {
             let originalText = escapeCSVString(transcription.text)
             let enhancedText = escapeCSVString(transcription.enhancedText ?? "")
+            let correctedText = escapeCSVString(transcription.correctedText ?? "")
             let enhancementModel = escapeCSVString(transcription.aiEnhancementModelName ?? "")
             let promptName = escapeCSVString(transcription.promptName ?? "")
             let transcriptionModel = escapeCSVString(transcription.transcriptionModelName ?? "")
@@ -38,7 +39,7 @@ class VoiceInkCSVExportService {
             let timestamp = transcription.timestamp.ISO8601Format()
             let duration = transcription.duration
 
-            let row = "\(originalText),\(enhancedText),\(enhancementModel),\(promptName),\(transcriptionModel),\(mode),\(enhancementTime),\(transcriptionTime),\(timestamp),\(duration)\n"
+            let row = "\(originalText),\(enhancedText),\(enhancementModel),\(promptName),\(transcriptionModel),\(mode),\(enhancementTime),\(transcriptionTime),\(timestamp),\(duration),\(correctedText)\n"
             csvString.append(row)
         }
 

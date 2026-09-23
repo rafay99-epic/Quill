@@ -38,7 +38,8 @@ struct InlineHistoryView: View {
             if !searchText.isEmpty {
                 descriptor.predicate = #Predicate<Transcription> { transcription in
                     (transcription.text.localizedStandardContains(searchText) ||
-                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)) &&
+                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false) ||
+                    (transcription.correctedText?.localizedStandardContains(searchText) ?? false)) &&
                     transcription.timestamp < timestamp
                 }
             } else {
@@ -49,7 +50,8 @@ struct InlineHistoryView: View {
         } else if !searchText.isEmpty {
             descriptor.predicate = #Predicate<Transcription> { transcription in
                 transcription.text.localizedStandardContains(searchText) ||
-                (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)
+                (transcription.enhancedText?.localizedStandardContains(searchText) ?? false) ||
+                (transcription.correctedText?.localizedStandardContains(searchText) ?? false)
             }
         }
 
@@ -133,6 +135,13 @@ struct InlineHistoryView: View {
                     await resetPagination()
                     await loadInitialContent()
                 }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .transcriptionCorrected)) { _ in
+            guard isViewCurrentlyVisible else { return }
+            Task {
+                await resetPagination()
+                await loadInitialContent()
             }
         }
     }
@@ -431,7 +440,8 @@ struct InlineHistoryView: View {
             if !searchText.isEmpty {
                 allDescriptor.predicate = #Predicate<Transcription> { transcription in
                     transcription.text.localizedStandardContains(searchText) ||
-                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false)
+                    (transcription.enhancedText?.localizedStandardContains(searchText) ?? false) ||
+                    (transcription.correctedText?.localizedStandardContains(searchText) ?? false)
                 }
             }
 
@@ -471,6 +481,7 @@ private struct HistoryCardRow: View {
     let onShowInfo: () -> Void
 
     @State private var selectedTab: TranscriptionTab = .original
+    @State private var isCorrectionPresented = false
 
     private var displayText: String {
         switch selectedTab {
@@ -478,6 +489,21 @@ private struct HistoryCardRow: View {
             return transcription.text
         case .enhanced:
             return transcription.enhancedText ?? ""
+        case .corrected:
+            return transcription.correctedText ?? ""
+        }
+    }
+
+    private var availableTabs: [TranscriptionTab] {
+        TranscriptionTab.allCases.filter { tab in
+            switch tab {
+            case .original:
+                return true
+            case .enhanced:
+                return transcription.enhancedText != nil
+            case .corrected:
+                return transcription.correctedText != nil
+            }
         }
     }
 
@@ -506,7 +532,7 @@ private struct HistoryCardRow: View {
                         .foregroundColor(.secondary)
 
                     if !isExpanded {
-                        Text(transcription.enhancedText ?? transcription.text)
+                        Text(transcription.preferredText)
                             .font(.system(size: 13))
                             .lineLimit(2)
                             .foregroundColor(.primary)
@@ -529,6 +555,16 @@ private struct HistoryCardRow: View {
                     .padding(.top, 10)
             }
         }
+        .onChange(of: transcription.correctedText) { _, _ in
+            if selectedTab == .corrected, transcription.correctedText == nil {
+                selectedTab = .original
+            }
+        }
+        .sheet(isPresented: $isCorrectionPresented) {
+            TranscriptionCorrectionSheet(transcription: transcription) {
+                isCorrectionPresented = false
+            }
+        }
     }
 
     // MARK: - Expanded Content
@@ -536,9 +572,9 @@ private struct HistoryCardRow: View {
     private var expandedContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Tabs
-            if transcription.enhancedText != nil {
+            if availableTabs.count > 1 {
                 HStack(spacing: 4) {
-                    ForEach(TranscriptionTab.allCases, id: \.self) { tab in
+                    ForEach(availableTabs, id: \.self) { tab in
                         Button {
                             withAnimation(.easeInOut(duration: 0.15)) {
                                 selectedTab = tab
@@ -570,14 +606,16 @@ private struct HistoryCardRow: View {
             .frame(maxHeight: 350)
             .hoverCopyButton(textToCopy: displayText)
 
-            if hasAudioFile, let urlString = transcription.audioFileURL,
-               let url = URL(string: urlString) {
-                Divider()
-                AudioPlayerView(url: url, transcription: transcription, onInfoTap: onShowInfo)
-                    .padding(.vertical, 4)
-            } else {
-                HStack {
-                    Spacer()
+            HStack {
+                Button {
+                    isCorrectionPresented = true
+                } label: {
+                    Label("Edit / Teach", systemImage: "pencil.and.list.clipboard")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                Spacer()
+                if !hasAudioFile {
                     Button(action: onShowInfo) {
                         Image(systemName: "info.circle")
                             .font(.system(size: 14, weight: .medium))
@@ -586,6 +624,13 @@ private struct HistoryCardRow: View {
                     .buttonStyle(.plain)
                     .help("View details")
                 }
+            }
+
+            if hasAudioFile, let urlString = transcription.audioFileURL,
+               let url = URL(string: urlString) {
+                Divider()
+                AudioPlayerView(url: url, transcription: transcription, onInfoTap: onShowInfo)
+                    .padding(.vertical, 4)
             }
         }
     }

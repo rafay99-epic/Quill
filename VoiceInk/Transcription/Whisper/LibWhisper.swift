@@ -10,10 +10,6 @@ import os
 // Meet Whisper C++ constraint: Don't access from more than one thread at a time.
 actor WhisperContext {
     private var context: OpaquePointer?
-    private var language: String?
-    private var languageCString: [CChar]?
-    private var prompt: String?
-    private var promptCString: [CChar]?
     private var vadModelPath: String?
     private let logger = Logger(subsystem: "com.syntaxlabtechnology.quill", category: "WhisperContext")
 
@@ -29,30 +25,30 @@ actor WhisperContext {
         }
     }
 
-    func fullTranscribe(samples: [Float]) -> Bool {
+    func fullTranscribe(samples: [Float], language: String?, prompt: String?) -> Bool {
         guard let context = context else { return false }
         
         let maxThreads = max(1, min(8, cpuCount() - 2))
         var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
         
         let selectedLanguage = language ?? "auto"
+        var languageCString: [CChar]?
         if selectedLanguage != "auto" {
             languageCString = Array(selectedLanguage.utf8CString)
             params.language = languageCString?.withUnsafeBufferPointer { ptr in
                 ptr.baseAddress
             }
         } else {
-            languageCString = nil
             params.language = nil
         }
         
-        if prompt != nil {
-            promptCString = Array(prompt!.utf8CString)
+        var promptCString: [CChar]?
+        if let prompt, !prompt.isEmpty {
+            promptCString = Array(prompt.utf8CString)
             params.initial_prompt = promptCString?.withUnsafeBufferPointer { ptr in
                 ptr.baseAddress
             }
         } else {
-            promptCString = nil
             params.initial_prompt = nil
         }
         
@@ -94,9 +90,6 @@ actor WhisperContext {
                 success = false
             }
         }
-        
-        languageCString = nil
-        promptCString = nil
         
         return success
     }
@@ -152,15 +145,6 @@ actor WhisperContext {
             whisper_free(context)
             self.context = nil
         }
-        languageCString = nil
-    }
-
-    func setPrompt(_ prompt: String?) {
-        self.prompt = prompt
-    }
-
-    func setLanguage(_ language: String?) {
-        self.language = language
     }
 }
 
